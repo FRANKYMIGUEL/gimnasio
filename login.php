@@ -50,7 +50,7 @@ include("inc/conectar.php");
                         <div class="carousel-inner" align="center" role="listbox">
                             <div class="carousel-item active">
     
-                          <img class="d-block img-fluid" src="img/logo.png" height="200" alt="First slide">
+                          <img class="d-block img-fluid" src="img/logo.jpg" height="200" alt="First slide">
 						  <div class="copy-text"><a class="nav-link" href="https://www.softsimbiosis.com/"style="text-decoration:none;" target="_blank">Software: Softsimbiosis</a></div>
                       </div>
                   </div>
