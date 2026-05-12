@@ -1,0 +1,52 @@
+
+.menu{
+  background: #C04D00;
+  cursor: pointer;
+  padding: 1.4%;
+  color: #F9F8EB;
+  font-size: 16px;
+  font-weight: bold;
+}
+.menu:hover{
+  background: #EC7700;
+  color: white;
+}
+#menuVentas{
+  display: none;
+}
+#menuCompras{
+  display: none;
+}
+#menuProductos{
+  display: none;
+}
+#menuAdministracion{
+  display: none;
+}
+.submenu{
+  transition: all .2s ease-in-out;
+  background: #0881A3;
+  padding: 1.4%;
+  color:white;
+  font-size: 16px;
+  font-weight: bold;
+}
+.submenu:hover{
+  background: #fff;
+  color: black;
+  z-index: 1;
+  transform: scale(1.1);
+}
+a:link {text-decoration: none;color: white;}
+a:visited {text-decoration: none;color: white;}
+a:active {text-decoration: none;color: white;}
+a:hover {text-decoration: none;color: white;}
+.flechaarriba{
+  background: white;
+  color: black;
+}
+.flechaarriba:hover{
+  cursor: pointer;
+  background: black;
+  color: white;
+}

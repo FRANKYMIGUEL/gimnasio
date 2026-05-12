@@ -1,0 +1,29 @@
+
+input::-webkit-calendar-picker-indicator {
+  display: block;
+} 
+input[list]{
+	font-size: 18px;
+	font-weight: bold;
+	color: black;
+}
+label{
+	font-size: 20px;
+}
+.btnagregar{
+	margin-top: 30%;
+}
+.btnagregarUsuario{
+	margin-top: 2%;
+}
+th{
+	background: #33425B;
+	color: #F9F8EB;
+}
+.tablaUsuarios{
+	overflow-y: scroll;
+	height: 385px;
+}
+.noresize {
+  resize: none; 
+}
