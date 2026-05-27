@@ -146,9 +146,7 @@ exit();
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalLabel">Realizar Venta</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
+					
 				</div>
 				<div class="modal-body">
 					<div class="row">
@@ -210,7 +208,8 @@ exit();
 			<div class="col-md-12">
 			<input type="text" style="height:1px; width:1px;" id="duplicado" class="invisible" value="<?=$IDVENTAS?>">
 				<div class="row">
-					<div class="col-md-10">
+					<div class="col-md-2"></div>
+					<div class="col-md-8">
 						
 						<div class="row">
 							<div class=" col-md-2 text-center">
@@ -412,7 +411,9 @@ exit();
 						idventas = msg;
 						if (msg > 0) {
 							bandera = false;
-							alertify.success("Venta Guardada Correctamente" + msg);
+							alertify.success("Venta Guardada Correctamente");
+							//imprimir ticket
+							window.open("ticket_venta.php?idventas="+idventas, "_blank", "toolbar=no, scrollbars=no, resizable=no, top=100, left=100, width=400, height=600");
 						
 							setTimeout(function() {window.location = "pventas.php";}, 2000);
 							

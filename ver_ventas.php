@@ -8,12 +8,14 @@ if($_POST['funcion']=='Carga_Ventas'){
 	$resultados=$consulta->query("SELECT * FROM ventas WHERE fecha BETWEEN '".$_POST['fechai']." 00:00:00' AND '".$_POST['fechaf']." 23:00:00' ");
 	foreach ($resultados as $row) {
 		if($row['tipo']=='Cancelada')$cancelado = 'bg-danger';
+		$fecha = date("d-m-Y H:i:s",strtotime($row['fecha']));
 	?>
 	<tr class="<?=$cancelado?> text-uppercase">
 		<td><?=str_pad($row["folio"], 6, "0", STR_PAD_LEFT)?></td>
-		<td><?=substr($row['fecha'],0,10)?></td>
+		<td><?=$fecha?></td>
 		<td align="right">$ <?=number_format($row['importe'],2)?></td>
 		<td>
+			<a href="ticket_venta.php?idventas=<?=$row['folio']?>" target="_blank"><button class='btn-group btn-group-xs btn-success' title='Ticket' ><i class="bi bi-eye"></i></button></a>
 			<?
             
 			if($row['tipo']!='Cancelada'){

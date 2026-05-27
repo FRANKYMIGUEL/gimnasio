@@ -1,7 +1,7 @@
 <?
 if($_POST['funcion']=='Carga_Reporte'){
 	include("inc/conectar.php");
-	$idcategorias ='existencias>0';
+	$idcategorias ='existencias>=0';
 	if($_POST['idcategorias']!='0'){
 		$idcategorias .= " AND categoria LIKE '".$_POST['idcategorias']."'";
 	}
@@ -10,10 +10,9 @@ if($_POST['funcion']=='Carga_Reporte'){
         <thead>
             <tr>
                 <th>Nombre</th>
+				<th>Categoria</th>
                 <th width="100">Existencias</th>
-                <th align="right" width="180">Valor Costo</th>
                 <th align="right" width="180">Precio</th>
-                <th align="right" width="150">Costo por Unidad</th>
             </tr>
         </thead>
 	<?
@@ -23,6 +22,7 @@ if($_POST['funcion']=='Carga_Reporte'){
 	$TOTAL_COSTO = 0;
 	$slq = "SELECT * FROM productos WHERE $idcategorias ORDER BY nombre ASC";
 	$resultados=$consulta->query($slq );
+	$contador = 0;
 	foreach ($resultados as $row) {
 		$TOTAL_UTILIDAD += ($row['precio']-$row['costo'])*$row['existencias'];
 		$VALOR_COSTO += $row['costo']*$row['existencias'];
@@ -31,20 +31,26 @@ if($_POST['funcion']=='Carga_Reporte'){
 	?>
 	<tr class="<?=$cancelado?>">
 		<td class="text-uppercase"><?=$row["nombre"]?></td>
+		<td class="text-uppercase"><?=$row["categoria"]?></td>
 		<td align="right" width="200"><?=number_format($row['existencias'],2)?></td>
-		<td align="right" width="180">$ <?=number_format($row['costo']*$row['existencias'],2)?></td>
 		<td align="right" width="180">$ <?=number_format($row['precio'],2)?></td>
-		<td align="right" width="150">$ <?=number_format($row['costo'],2)?></td>
 		</td>
 	</tr>
 <?
+	$contador++;
+	}
+	if($contador==0){
+	?>
+	<tr>
+		<td colspan="4" align="center">No se encontraron resultados</td>
+	</tr>
+	<?
 	}
 	?>
         <tfoot>
             <tr>
                 <td align="right"></td>
 				<td align="right"><b><?=number_format($TOTAL_EXISTENCIAS,2)?></b></td>
-				<td align="right"><b>$ <?=number_format($VALOR_COSTO,2)?></b></td>
 				<td align="right"></td>
 				<td align="right"></td>
             </tr>
@@ -76,11 +82,15 @@ if($_POST['funcion']=='Carga_Reporte'){
 	<?php
 	include("inc/conectar.php");
 	if(isset($_GET['idcategorias'])){$idcategorias = $_GET['idcategorias'];}else{$idcategorias = '0';}
-        include("menu1.php");
 	 ?>
-<div class="container-fluid">
+<?
+include("menu.php");
+?>
+  <main class="page-content">
+   <div class="container-fluid">
 	<div class="row">
-        <div class="col-md-12">
+		<div class="col-md-2"></div>
+        <div class="col-md-10">
             <div class="row">
                 <div class="col-md-12 text-center ">
                 	<h4>Reporte de Inventario</h4>
@@ -93,10 +103,10 @@ if($_POST['funcion']=='Carga_Reporte'){
                     <select class="form-control " id="idcategorias">
                      	<option se value="0" >Todas</option>
                         <?
-                        $Auto = $consulta->query("SELECT * FROM categorias WHERE inactivo IS NULL ORDER BY categoria");
+                        $Auto = $consulta->query("SELECT * FROM categorias WHERE fechabaja IS NULL ORDER BY nombre");
                         foreach ($Auto as $row){
                         ?>
-                        <option value="<?=$row['categoria']?>" <? if($idcategorias==$row['categoria'])echo "selected";?>><?=$row['categoria']?></option>
+                        <option value="<?=$row['nombre']?>" <? if($idcategorias==$row['nombre'])echo "selected";?>><?=$row['nombre']?></option>
                         <?
                         }
                         ?>
@@ -112,6 +122,14 @@ if($_POST['funcion']=='Carga_Reporte'){
         </div>
     </div>
 </div>
+
+  </main>
+
+</div>
+
+
+
+
 <script>
 $(document).ready(function(e) {
 
@@ -139,6 +157,7 @@ $(document).ready(function(e) {
 			dataType: "html",
 			async:false,
 			success: function(msg){
+				console.log(msg);
 				$("#resultados_reporte").html(msg);
 			}
 		});

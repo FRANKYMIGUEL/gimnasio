@@ -38,9 +38,9 @@ include("inc/conectar.php");
                      <input type="password" class="form-control" name="contraseña" id="contraseña" placeholder="Contraseña"><br>
                     </div>
                     <div class="form-check">
-                      <button type="submit" id="ingresar" class="btn btn-login float-right">Ingresar</button>
+                      <button type="submit" id="ingresar" class="btn btn-success float-right">Ingresar</button>
                     </div>
-                    <div class="copy-text">  ® 2024 Simbiosis</div>
+                    <div class="copy-text">  ® 2026 Simbiosis</div>
 		                </div>
 		                  <div class="col-md-8 banner-sec">
                         <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
@@ -51,7 +51,6 @@ include("inc/conectar.php");
                             <div class="carousel-item active">
     
                           <img class="d-block img-fluid" src="img/logo.jpg" height="200" alt="First slide">
-						  <div class="copy-text"><a class="nav-link" href="https://www.softsimbiosis.com/"style="text-decoration:none;" target="_blank">Software: Softsimbiosis</a></div>
                       </div>
                   </div>
 		            </div>
@@ -73,12 +72,12 @@ $(document).ready(function(e) {
 	$(document).keypress(function(e) {
 		if(e.which == 13) {
 			if($("#usuario").val()==""){
-				alertify.error('Inserta Un usuario');
+				alertify.error('Ingresa Un usuario');
 				$("#usuario").focus();
 				return false;
 			}
 			 if($("#contraseña").val()==""){
-				alertify.error('Inserta Una contraseña');
+				alertify.error('Ingresa Una contraseña');
 			  $("#contraseña").focus();
 				return false;
 			}
@@ -89,12 +88,12 @@ $(document).ready(function(e) {
   
 	$(document).on("click","#ingresar",function(){
 		if($("#usuario").val()==""){
-			alertify.error('Inserta Un usuario');
+			alertify.error('Ingresa Un usuario');
 			$("#usuario").focus();
 			return false;
 		}
 		 if($("#contraseña").val()==""){
-			alertify.error('Inserta Una contraseña');
+			alertify.error('Ingresa Una contraseña');
 		  $("#contraseña").focus();
 			return false;
 		}

@@ -6,10 +6,6 @@ $IDVENTAS = $_GET["idventas"];
 if($_GET["idventas"]=='')$IDVENTAS = 1;
 $result = $consulta->query("SELECT * FROM ventas WHERE idventas=".$_GET["idventas"]."");
 foreach ($result as $row);
-$result1 = $consulta->query("SELECT COUNT(*) FROM ventas_detalle WHERE idventas=".$IDVENTAS);
-foreach ($result1 as $con);
-$result2 = $consulta->query("SELECT * FROM clientes WHERE idclientes=".$row['idclientes']);
-foreach ($result2 as $clientes);
 
 $con=($con[0]=="")?0:$con[0];
 $ancho=260;
@@ -29,10 +25,10 @@ $piezas = 0;
 <title>Ticket</title>
 <div id="resultados_ticket" style="position:absolute;top:0px;left:0px;margin:0px;padding:0px;width:<?=$ancho?>px; height:<?=($con*60)+230+$altu?>px;border:0px solid; font:Arial, Helvetica, sans-serif; font-family:Arial, Helvetica, sans-serif;">
 	<div style="position:RELATIVE;top:0px;left:0px;width:<?=$ancho?>px;text-align:center; font-size:12px;">
-    	<img src="img/logo.png" height="80" />
+    	<img src="img/logo.jpg" height="80" />
     </div>
 	<div style="position:RELATIVE;left:0px;width:<?=$ancho?>px;text-align:center; font-size:14px;">
-      <label>Av. Del herradero #1189 <br>Col. La herradura, Arandas, Jal. </label><br />
+      <label>Santa Rita #353 Arandas, Jal. </label><br />
       <label>3481328125</label><br />
     	<label><b>Ticket No. : <?=str_pad($row["folio"], 6, "0", STR_PAD_LEFT); ?></b></LABEL>
 	</div>
@@ -42,21 +38,8 @@ $piezas = 0;
 		$ano=explode("-",$fecha[0]);
 		$mes=$ano[1];
 		$dia=$ano[2];
-		$cliente=$row["cliente"];
-		echo "<center>Fecha: ".$dia."/".$mes."/".$ano[0]." ".$fecha[1]."</center>";
-		echo "<center>Cliente: ".$row['clie'].' '.substr($row['clientes'],0,37)."</center>";
-      if($row['idclientes']>1){
-		?>
-        <center>Domicilio: <?=$clientes["domicilio"].' '.$clientes["telefono"]?></center>
-        <?
-      }
+		echo "<center>Fecha: ".$dia."/".$mes."/".$ano[0]." ".$fecha[1]."</center>";      
 		echo "<center><b>".$REIMPRESO."</b></center>";
-		if($row['tipo']=='credito'){
-			echo "<center><b>Venta a Credito</b></center><br>";
-		}
-		if($row['tipo']=='Cotizacion'){
-			echo "<center><b>Cotizacion</b></center><br>";
-		}
 		?>
 	</div>
 	<div style="position:RELATIVE;left:0px;width:<?=$ancho?>px;text-align:left;">
@@ -113,27 +96,12 @@ $piezas = 0;
 			$SUBTOTAL=$total;
 			$SUBTOTALD=$SUBTOTAL;
 			$TOTAL=$total;
-			if($row["descuento"]>0){
-				echo '<div style="text-align:left; width:100%; font-size:16px; text-align:right;">Descuento %  '.number_format($row["descuento"],2,".",",").'</span></div>';
-			}
 			if($row["efectivo"]>0 and ($row["tipo"]=="credito" or $row["tipo"]=="apartado")){
 				echo '<div style="text-align:left; width:100%; font-size:16px; text-align:right;">Abono en Efectivo $ '.number_format($row["efectivo"],2,".",",").'</span></div>';
 			}elseif($row["efectivo"]>0 and $row["tipo"]=="efectivo"){
 				echo '<div style="text-align:left; width:100%; font-size:16px; text-align:right;">Pago en Efectivo $ '.number_format($row["efectivo"],2,".",",").'</span></div>';
 			}
-			if($row["tarjeta"]>0){
-				echo '<div style="text-align:left; width:100%; font-size:14px; text-align:right;">Pago con Tarjeta $&nbsp; '.number_format($row["tarjeta"]-$row["comision_tarjeta"],2,".",",").'</span></div>';
-				echo '<div style="text-align:left; width:100%; font-size:14px; text-align:right;">Comision Tarjeta $&nbsp; '.number_format($row["comision_tarjeta"],2,".",",").'</span></div>';
-				echo '<div style="text-align:left; width:100%; font-size:14px; text-align:right;">Total Tarjeta $&nbsp; '.number_format($row["tarjeta"],2,".",",").'</span></div>';
-			}
-			
-			?>
-         
-         <?
-         if($row["tipo"]=="apartado" or $row["tipo"]=="credito"){
-			 echo '<div style="text-align:left; width:100%; font-size:16px; text-align:right;"><b>Total &nbsp;&nbsp;&nbsp;<span style="float:right;"> $&nbsp;'.number_format($row["importe"],2,'.',',').'</span></b></div>';
-				echo '<div style="text-align:left; width:100%; font-size:16px; text-align:right;">Resta $'.number_format($row["importe"]-$row["efectivo"]-($row["tarjeta"]-$row["comision_tarjeta"]),2,".",",").'</span></div>';
-			}
+		
 			if($row["tipo"]=="contado"){
 				echo '<div style="text-align:left; width:100%; font-size:16px; text-align:right;"><b>Total Venta &nbsp;&nbsp;&nbsp;<span style="float:right;"> $&nbsp;'.number_format($row["importe"],2,'.',',').'</span></b></div>';
 			?>
@@ -142,11 +110,7 @@ $piezas = 0;
 			}
 			?>
 			<div style="text-align:left;font-size:12px; ">&nbsp;Atendido por: <?=$row["usuarios"]?></div>
-            <label style="text-align:left;font-size:12px; "><center>Gracias por su compra</center></LABEL>
-            <label style="text-align:left;font-size:12px; ">
-         <center><strong>Favor de revisar su mercancía antes de recibirla, recibida la mercancía no se admiten reclamaciones.</strong></center>
-         <center><strong></strong></center>
-      </LABEL>
+            <label style="text-align:left;font-size:12px; "><center>Gracias por su compra</center></label>
       <div >
          <?php
          if($row["tipo"]=="credito"){

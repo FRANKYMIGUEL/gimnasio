@@ -3,6 +3,13 @@ if($_POST['funcion']=='Carga_Clientes'){
 include("inc/conectar.php");
 	$resultados=$consulta->query("SELECT clientes.*, clases.nombre AS clase FROM clientes LEFT JOIN clases ON clases.idclases=clientes.idclases WHERE clientes.fechabaja IS NULL");
 	foreach ($resultados as $row) {
+		//formato de fecha fechapago y fechaexpiracion, fecha_registro
+		$row['fechapago'] = date("d-m-Y",strtotime($row['fechapago']));
+		$row['fechaexpiracion'] = date("d-m-Y",strtotime($row['fechaexpiracion']));
+		$row['fecharegistro'] = date("d-m-Y",strtotime($row['fecharegistro']));
+
+
+
 	?>
 	<tr>
 		<td>
@@ -14,10 +21,12 @@ include("inc/conectar.php");
 		<td><?=$row['domicilio']?></td>
 		<td><?=$row['genero']?></td>
 		<td><?=$row['telefono']?></td>
-		<td><?=$row['fecha_inicio']?></td>
-		<td><?=$row['fecha_expiracion']?></td>
-		<td><?=$row['imagen']?></td>
-		<td><?=$row['fecha_registro']?></td>
+		<td><?=substr($row['fechapago'],0,10)?></td>
+		<td><?=substr($row['fechaexpiracion'],0,10)?></td>
+		<td>
+		<img src="<?=$row['imagen']?>" width="100">
+	</td>
+		<td><?=substr($row['fecharegistro'],0,10)?></td>
 		<td>
 			<button type="button" class="btn btn-default btn-sm btn-info editar" data-toggle="modal" data-target="#myModal" idregistro="<?=$row[0]?>">
 			<i class="bi bi-pencil"></i> Editar

@@ -7,7 +7,9 @@ if ($_POST['funcion'] == 'Carga') {
 		<tr align="center">
 			<td class="text-uppercase"><?= $row['codigo'] ?></td>
 			<td class="text-uppercase" align="left"><?= $row['nombre'] ?></td>
+			<td class="text-uppercase"><?= $row['categoria'] ?></td>
 			<td class="text-uppercase">$ <?= number_format( $row['precio'],2) ?></td>
+			<td class="text-uppercase"><?= number_format( $row['existencias'],0) ?></td>
 			<td class="text-center" width="200">
 				<button type="button" class="btn btn-primary btn-sm editar" registros="<?= $row[0] ?>"><i class="bi bi-pencil"></i> Editar</button>
 				<button type="button" class="btn btn-danger btn-sm eliminar" registros="<?= $row[0] ?>"><i class="bi bi-trash3"></i> Eliminar</button>
@@ -25,13 +27,13 @@ if ($_POST['funcion'] == 'Eliminar') {
 }
 if ($_POST['funcion'] == 'Guardar') {
 	include('inc/conectar.php');
-	$Auto = $consulta->query("INSERT INTO productos SET nombre='".$_POST['nombre']."', codigo='".$_POST['codigo']."', precio=".$_POST['precio']."");
+	$Auto = $consulta->query("INSERT INTO productos SET nombre='".$_POST['nombre']."', codigo='".$_POST['codigo']."', categoria='".$_POST['categoria']."', precio=".$_POST['precio'].", existencias=".$_POST['existencias']."");
 	foreach ($Auto as $Autocontador);
 	exit();
 }
 if ($_POST['funcion'] == 'Editar') {
 	include('inc/conectar.php');
-	$Auto = $consulta->query("UPDATE productos SET nombre='" . $_POST['nombre'] . "', codigo='" . $_POST['codigo'] . "', precio='" . $_POST['precio'] . "' WHERE idproductos=" . $_POST['idregistro']);
+	$Auto = $consulta->query("UPDATE productos SET nombre='" . $_POST['nombre'] . "', codigo='" . $_POST['codigo'] . "',  categoria='" . $_POST['categoria'] . "', precio='" . $_POST['precio'] . "', existencias='" . $_POST['existencias'] . "' WHERE idproductos=" . $_POST['idregistro']);
 	foreach ($Auto as $Autocontador);
 	exit();
 }
@@ -48,11 +50,28 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 				<label>Codigo</label>
 				<input type="text" class="form-control" id="codigo" value="<?= $row['codigo'] ?>" placeholder="Codigo ">
 			</div>
-			<div class="col-6 font-weight-bold">
+			<div class="col-9 font-weight-bold">
 				<label>Nombre</label>
 				<input type="text" class="form-control text-uppercase" id="nombre" value="<?= $row['nombre'] ?>" placeholder="Nombre ">
 			</div>
-			<div class="col-3 font-weight-bold">
+			<div class="col-4 font-weight-bold">
+				<label>Categoria</label>
+				   <select class="form-control " id="categoria">
+                        <?
+                        $Auto = $consulta->query("SELECT * FROM categorias WHERE fechabaja IS NULL ORDER BY nombre");
+                        foreach ($Auto as $row_categoria){
+                        ?>
+                        <option value="<?=$row_categoria['nombre']?>" <? if($row_categoria['nombre']==$row['categoria'])echo "selected";?>><?=$row_categoria['nombre']?></option>
+                        <?
+                        }
+                        ?>
+                    </select>
+			</div>
+			<div class="col-4 font-weight-bold">
+				<label>Existencias</label>
+				<input type="text" class="form-control text-left" value="<?= $row['existencias'] ?>" id="existencias">
+			</div>
+			<div class="col-4 font-weight-bold">
 				<label>Precio</label>
 				<input type="text" class="form-control text-left" value="<?= $row['precio'] ?>" id="precio">
 			</div>
@@ -95,9 +114,7 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalLabel"><i class="bi bi-box-seam-fill"></i> Productos</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
+					
 				</div>
 				<div id="resultados_modal">
 				</div>
@@ -133,7 +150,9 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 								<tr align="center">
 									<th>Codigo</th>
 									<th>Nombre</th>
+									<th>Categoria</th>
 									<th>Precio</th>
+									<th>Existencias</th>
 									<th>Opciones</th>
 								</tr>
 							</thead>
@@ -209,7 +228,9 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 					funcion: "Guardar",
 					codigo: $("#codigo").val(),
 					nombre: $("#nombre").val(),
-					precio: $("#precio").val()
+					precio: $("#precio").val(),
+					categoria: $("#categoria option:selected").val(),
+					existencias: $("#existencias").val()
 				}),
 				dataType: "html",
 				async: false,
@@ -239,6 +260,11 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 				$("#precio").focus();
 				return false;
 			}
+			if (isNaN(Quita_Moneda($("#existencias").val()))) {
+				alertify.error("Las Existencias deben ser un valor numerico");
+				$("#existencias").focus();
+				return false;
+			}
 			$.ajax({
 				type: "POST",
 				url: "<?= $_SERVER["PHP_SELF"] ?>",
@@ -247,6 +273,8 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 					codigo: $("#codigo").val(),
 					nombre: $("#nombre").val(),
 					precio: Quita_Moneda($("#precio").val()),
+					categoria: $("#categoria option:selected").val(),
+					existencias: $("#existencias").val(),
 					idregistro: idregistro
 				}),
 				dataType: "html",
