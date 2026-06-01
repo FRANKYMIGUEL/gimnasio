@@ -52,11 +52,16 @@ include("inc/conectar.php");
 }
 if($_POST['funcion']=='Guardar'){
 include("inc/conectar.php");
+include("controlador_lector.php");
+	$controlador = new HikvisionReaderXML("192.168.1.79:8000", "admin", "simbiosis2026");
+
 	$Auto = $consulta->query("SELECT MAX(idclientes)+1 AS Auto_increment FROM clientes");
 	foreach ($Auto as $Autocontador);
 	$CODIGO =str_pad($Autocontador["Auto_increment"], 6, "0", STR_PAD_LEFT);
 	$Auto = $consulta->query("INSERT INTO clientes SET codigo='".$CODIGO."', nombre='".$_POST['nombre']."', domicilio='".$_POST['domicilio']."', idmembresia='".$_POST['idmembresia']."', membresia='".$_POST['membresia']."', dia='".$_POST['dia']."', telefono='".$_POST['telefono']."', idclases='".$_POST['idclases']."', observaciones='".$_POST['observaciones']."' ");
 	foreach ($Auto as $Autocontador);
+
+	$controlador->agregarUsuario($Autocontador["Auto_increment"], $_POST['nombre']);
 	echo $CODIGO;
 exit();
 }
@@ -345,7 +350,7 @@ $(document).ready(function(e) {
 			success: function(msg){
 				console.log(msg);
 				alertify.success("Cliente Agredado Exitosamente ");
-				window.location="clientes.php";
+				//window.location="clientes.php";
 			}
 		});
     });
