@@ -1,5 +1,5 @@
 <?php
-$host = "192.168.1.79"; // IP del biométrico
+$host = "192.0.0.64"; // IP del biométrico
 $username = "admin";
 $password = "simbiosis2026"; // Contraseña del biométrico
 $url = "http://$host/ISAPI/AccessControl/RemoteControl/door/1"; // Endpoint para la puerta 1

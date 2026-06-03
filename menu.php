@@ -35,6 +35,7 @@ foreach ($Auto as $permisos) {
           <span class="user-name">Usuario: <? echo $_SESSION['SISTEMA']['usuario'] ?>
           </span>
         </div>
+       
       </div>
       <!-- sidebar-header  -->
       <div class="sidebar-menu">
@@ -44,6 +45,12 @@ foreach ($Auto as $permisos) {
               <i class="fa fa-home"></i>
               <i class="bi bi-house"></i>
               <span>Inicio</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" id="abrir_puerta">
+              <i class="bi bi-door-open"></i>
+              <span>Abrir Puerta</span>
             </a>
           </li>
           <li class="sidebar-dropdown">
@@ -154,6 +161,7 @@ foreach ($Auto as $permisos) {
               <span>Reporte de Corte de Caja</span>
             </a>
           </li>
+           
         </ul>
       </div>
       <!-- sidebar-menu  -->
@@ -177,3 +185,28 @@ foreach ($Auto as $permisos) {
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 <script src="menu.js"></script>
+<script>
+  $(document).ready(function() {
+   $(document).on("click","#abrir_puerta",function(){
+		alertify.confirm("Abrir Reilete",'Estas Seguro de Abrir la Puerta', function(){
+		alertify.success('Si') ;
+			$.ajax({
+				type: "POST",
+				url: "abrir_reliete.php",
+				data: ({
+					funcion : "opendoor",
+					employeeNo : "1"
+				}),
+				dataType: "html",
+				async:false,
+				success: function(msg){
+					console.log(msg);
+					alertify.success("Puerta abierta Exitosamente ");
+					//window.location="clientes.php";
+				}
+			});
+		}, function(){
+			alertify.error('Cancelado')});
+	});
+  });
+  </script>
