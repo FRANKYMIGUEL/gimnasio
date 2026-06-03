@@ -81,9 +81,9 @@ include("inc/conectar.php");
     $respuesta = $controlador->uploadUserFace($employeeNo, $rutaTemporal);
 
     // 6. LIMPIEZA: Eliminar el archivo temporal del servidor PHP
-    if (file_exists($rutaTemporal)) {
-        unlink($rutaTemporal);
-    }
+    //if (file_exists($rutaTemporal)) {
+    //    unlink($rutaTemporal);
+    //}
 
     // 7. EVALUAR RESPUESTA DE HIKVISION
     // Revisamos si el estatus interno de Hikvision fue exitoso
@@ -138,10 +138,13 @@ include("inc/conectar.php");
 		<td><?=substr($row['fecharegistro'],0,10)?></td>
 		<td>
 			<button type="button" class="btn btn-default btn-sm btn-info editar" data-toggle="modal" data-target="#myModal" idregistro="<?=$row[0]?>">
-			<i class="bi bi-pencil"></i> Editar
+				<i class="bi bi-pencil"></i> Editar
 			</button>
 			<button type="button" class="btn btn-default btn-sm btn-danger eliminar" idregistro="<?=$row[0]?>">
-			<i class="bi bi-trash3"></i>  Eliminar
+				<i class="bi bi-trash3"></i>  Eliminar
+			</button>
+			<button type = "button" class = "btn btn-default btn-sm btn-secondary foto" data-toggle="modal" data-target="#modalFoto" idregistro = "<?=$row[0]?>">
+				<i class= "bi bi-camera"></i>Actualizar Foto
 			</button>
 		</td>
 	</tr>
@@ -410,6 +413,25 @@ include("inc/conectar.php");
 
 exit();
 }
+
+if($_POST['funcion'] == 'tomarFotografia') {
+	$idregistro = $_POST['idregistro'];
+	
+	$hikvision = new HikvisionService(
+		'192.0.0.64',
+		'admin',
+		'simbiosis2026'
+	);
+
+	$ok = $hikvision->takeLivePicture($idregistro);
+
+	echo json_encode([
+		'success' => $ok,
+		'imagen' => "rostro". $idregistro . ".jpg"
+	]);
+
+exit();
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -492,6 +514,32 @@ include("menu.php");
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
   </div>
+
+<!-- MODAL PARA FOTO -->
+  <div class="modal" tabindex="-1" role="dialog" id = "modalFoto">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+		<div>
+			<img src="" alt="Vista previa" class = "img-fluid" id = "previewFoto">
+			<button id = "tomarFotobtn" class = "btn btn-primary">Tomar foto</button>
+		</div>	
+	</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id = "guardarFotoModal">Guardar Foto</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/jquery-3.3.1.js"></script>
@@ -529,6 +577,8 @@ $(document).ready(function(e) {
 		Carga_Modal("Nuevo",0);
 		Carga_Folio();
 	});
+
+
 	$(document).on("change","#idmembresia",function(){
 		Cargar_Costos();
 	});
@@ -641,6 +691,7 @@ $(document).ready(function(e) {
 		Carga_Modal("Editar",idregistro);
 		Cargar_Costos();
 	});
+
 	$(document).on("click",".eliminar",function(){
 		var idregistro = $(this).attr("idregistro");
 		alertify.confirm('Estas Seguro de Eliminar el Cliente', function(){
@@ -662,6 +713,12 @@ $(document).ready(function(e) {
 		}, function(){
 		alertify.error('Cancelado')});
 	});
+
+	$(document).on('click', ".foto", function() {
+		var idregistro = $(this).attr('idregistro');
+		Carga_Modal_Foto(idregistro);
+	});
+
 	function Carga_Modal(tipo,idregistro){
 		$.ajax({
 			type: "POST",
@@ -678,8 +735,40 @@ $(document).ready(function(e) {
 				$("#contenido_modal").html(msg);
 			}
 		});
-
 	}
+
+	function Carga_Modal_Foto(idregistro) {
+		$('#guardarFotoModal').attr('idregistro', idregistro);
+	}
+
+
+	// Captura de foto y cargada 
+	$(document).on("click", "#tomarFotobtn", function(e) {
+		let idregistro = $("#guardarFotoModal").attr('idregistro');
+		alert(idregistro);
+		$.ajax({
+			type: "POST",
+			url: "clientes.php",
+			data: ({
+				funcion: "tomarFotografia",
+				idregistro: idregistro,
+			}),
+			dataType: "json",
+			success: function(response) {
+				if(response.success) {
+					$("#previewFoto").attr(
+						"src",
+						"capturas/" + response.imagen
+					);
+					alertify.success('Foto tomada correctamente.');
+				} else {
+					alertify.error('Error al tomar la foto.');
+				}
+			}
+		});
+	});
+
+
 	$(document).on("click","#Guardar",function(e) {
         if($("#nombre").val()==""){
 			alertify.error("Ingresa un Nombre");

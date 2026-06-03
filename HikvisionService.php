@@ -265,47 +265,63 @@ class HikvisionService {
 
         return $response;
     }
+
     public function captureAndSaveFace(string $employeeNo): array {
-    $endpoint = '/ISAPI/AccessControl/CaptureFace?format=json';
-    $url = "http://{$this->ip}{$endpoint}";
+        $endpoint = '/ISAPI/AccessControl/CaptureFace?format=json';
+        $url = "http://{$this->ip}{$endpoint}";
 
-    // El JSON que Hikvision espera para activar la cámara del lector
-    $payload = json_encode([
-        'CaptureFace' => [
-            'employeeNo' => $employeeNo
-        ]
-    ]);
+        // El JSON que Hikvision espera para activar la cámara del lector
+        $payload = json_encode([
+            'CaptureFace' => [
+                'employeeNo' => $employeeNo
+            ]
+        ]);
 
-    $ch = curl_init();
+        $ch = curl_init();
 
-    curl_setopt_array($ch, [
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_USERPWD => "{$this->username}:{$this->password}",
-        CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $payload,
-        CURLOPT_HTTPHEADER => [
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($payload)
-        ],
-    ]);
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_USERPWD => "{$this->username}:{$this->password}",
+            CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($payload)
+            ],
+        ]);
 
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    if(curl_errno($ch)) {
-        throw new Exception('Error cURL:' . curl_error($ch));
+        if(curl_errno($ch)) {
+            throw new Exception('Error cURL:' . curl_error($ch));
+        }
+
+        curl_close($ch);
+
+        if($httpCode !== 200) {
+            throw new Exception("Error HTTP {$httpCode}. Respuesta del equipo: " . $response);
+        }
+
+        return json_decode($response, true);
     }
 
-    curl_close($ch);
+    // Toma de la captura para despues ser guardada con el numero de empleado
+    public function takeLivePicture(string $employeeNo): bool {
+        $savePath = __DIR__ . "/capturas/rostro{$employeeNo}.jpg";
 
-    if($httpCode !== 200) {
-        throw new Exception("Error HTTP {$httpCode}. Respuesta del equipo: " . $response);
+        $image = $this->getLivePicture();
+
+        $saved = file_put_contents(
+            $savePath,
+            $image
+        );
+
+        return $saved !== false;
     }
 
-    return json_decode($response, true);
-}
 
 
     // asignacion de foto

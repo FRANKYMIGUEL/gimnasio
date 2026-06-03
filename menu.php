@@ -7,13 +7,7 @@ if (!isset($_SESSION['SISTEMA']['usuario'])) {
   header("Location: login.php");
   exit();
 }
-$modulos = array();
-$Auto = $consulta->query("SELECT modulos.idmodulos FROM permisos LEFT JOIN modulos ON modulos.idmodulos=permisos.idmodulos WHERE idusuarios=" . $_SESSION['SISTEMA']['idusuarios'] . "");
-$contador = 0;
-foreach ($Auto as $permisos) {
-  $modulos[$contador] = $permisos[0];
-  $contador++;
-}
+
 ?>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
