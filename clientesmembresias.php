@@ -7,6 +7,7 @@ if($_POST['funcion']=='Carga_Datos'){
 	$inactivos = $resultados['inactivos'];
 	$total = $activos + $inactivos;
 	echo $activos."|".$inactivos."|".$total;
+	
 	exit();
 }
 
