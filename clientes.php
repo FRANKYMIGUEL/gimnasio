@@ -1,12 +1,15 @@
 <?
 include("HikvisionService.php");
+$IP = "192.0.0.64";
+$Usuario = "admin";
+$Contrasena = "simbiosis2026";
 
 if($_POST['funcion']=='Registrar_Dispositivo'){
 
 include("inc/conectar.php");
 
 	try {
-		$controlador = new HikvisionService('192.0.0.64', 'admin', 'simbiosis2026');
+		$controlador = new HikvisionService($IP, $Usuario, $Contrasena);
 
 		// 1. Ejecutar la creación
 		$respuesta = $controlador->createUser(
@@ -59,7 +62,7 @@ include("inc/conectar.php");
 
 	try {
     // 1. Inicializar el servicio
-    $controlador = new HikvisionService('192.0.0.64', 'admin', 'simbiosis2026');
+    $controlador = new HikvisionService($IP, $Usuario, $Contrasena);
     $employeeNo = $_POST['idregistro']; // ID del empleado que vamos a actualizar
 
     if (empty($employeeNo)) {
@@ -162,7 +165,7 @@ include("inc/conectar.php");
 if($_POST['funcion']=='Guardar'){
 include("inc/conectar.php");
 include("controlador_lector.php");
-	$controlador = new HikvisionReaderXML("192.168.1.79:8000", "admin", "simbiosis2026");
+	$controlador = new HikvisionReaderXML($IP, $Usuario, $Contrasena);
 	$Auto = $consulta->query("SELECT MAX(idclientes)+1 AS Auto_increment FROM clientes");
 	foreach ($Auto as $Autocontador);
 	$CODIGO =str_pad($Autocontador["Auto_increment"], 6, "0", STR_PAD_LEFT);
@@ -199,6 +202,11 @@ if($_POST['funcion']=='Registrar_Pago'){
 		//insertanmos el pago en la tabla de movimientoscaja
 		$Auto = $consulta->query("INSERT INTO movimientoscaja SET idclientes=".$_POST['idregistro'].", importe='".$_POST['importepago']."', fecha='".date("Y-m-d H:i:s")."', tipo='Membresia', observaciones='Pago de Membresia', idusuarios=".$_SESSION['SISTEMA']['idusuarios'].", usuarios='".$_SESSION['SISTEMA']['usuario']."'");
 			foreach ($Auto as $Autocontador);
+		//INSERTAMAMOS EN CLIENTESMIEMBRESIAS
+		$Auto = $consulta->query("INSERT INTO clientesmembresias SET idclientes=".$_POST['idregistro'].", idmembresias='".$_POST['idmembresia']."', fecha='".date("Y-m-d H:i:s")."'");
+		foreach ($Auto as $Autocontador);
+
+		
 
 	} catch (Exception $e) {
 		echo "Error en la comunicación: " . $e->getMessage();
@@ -568,7 +576,8 @@ $(document).ready(function(e) {
 					funcion : "Registrar_Pago",
 					idregistro : idregistro,
 					importepago : pago,
-					duracion : duracion
+					duracion : duracion,
+					idmembresia : $("#idmembresia option:selected").val()
 				}),
 				dataType: "html",
 				async:false,
