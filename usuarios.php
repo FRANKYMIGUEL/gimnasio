@@ -44,8 +44,7 @@ if ($_POST['funcion'] == 'Restaurar') {
 }
 if ($_POST['funcion'] == 'Guardar') {
 	include('inc/conectar.php');
-	echo "INSERT INTO usuarios SET nombre='" . $_POST['nombre'] . "', tipo='" . $_POST['tipo'] . "', pass='" . $_POST['pass'] . "', fecha_creacion='" . date("Y-m-d H:i:s") . "' ";
-	exit();
+	
 	$Auto = $consulta->query("INSERT INTO usuarios SET nombre='" . $_POST['nombre'] . "', tipo='" . $_POST['tipo'] . "', pass='" . $_POST['pass'] . "', fecha_creacion='" . date("Y-m-d H:i:s") . "' ");
 	foreach ($Auto as $Autocontador);
 	exit();
