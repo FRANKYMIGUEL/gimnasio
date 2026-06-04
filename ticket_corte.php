@@ -10,7 +10,7 @@ $USUARIO =  $_SESSION['SISTEMA']['usuario'];
 $result = $consulta->query("SELECT SUM(importe),  fecha FROM ventas WHERE fecha BETWEEN '".$fechas[0]." 00:00:00' AND '".$fechas[1]." 23:59:00' AND tipo IS NULL");
 foreach ($result as $row);
 
-$result = $consulta->query("SELECT SUM(importe), fecha FROM clientesmembresias LEFT JOIN membresias ON membresias.idmembresia=clientesmembresias.idmembresias LEFT JOIN clientes ON clientes.idclientes=clientesmembresias.idclientes WHERE clientesmembresias.fechapago BETWEEN '" .$fechas[0]. " 00:00:00' AND '" .$fechas[1] . " 23:00:00'");
+$result = $consulta->query("SELECT SUM(importe), fecha FROM movimientoscaja WHERE tipo='Membresia' AND fecha BETWEEN '" .$fechas[0]. " 00:00:00' AND '" .$fechas[1] . " 23:00:00'");
 foreach ($result as $row_mem);
 $result = $consulta->query("SELECT SUM(importe), fecha FROM movimientoscaja WHERE fecha BETWEEN '".$fechas[0]." 00:00:00' AND '".$fechas[1]." 23:59:00' AND (tipo LIKE 'Ingreso') GROUP BY tipo");
 foreach ($result as $row_ingreso);
@@ -89,7 +89,7 @@ $piezas = 0;
 <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
 <script>
 $(document).ready(function(e) {
- // cerrar() ;
+  cerrar() ;
   function cerrar() {
 	  window.print();
 	   setTimeout(window.close,3000); }

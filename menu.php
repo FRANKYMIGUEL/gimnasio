@@ -42,8 +42,7 @@ foreach ($Auto as $permisos) {
         <ul>
           <li>
             <a href="index.php">
-              <i class="fa fa-home"></i>
-              <i class="bi bi-house"></i>
+                <i class="bi bi-house"></i>
               <span>Inicio</span>
             </a>
           </li>
@@ -133,6 +132,12 @@ foreach ($Auto as $permisos) {
             <a href="clientes.php">
               <i class="bi bi-people"></i>
               <span>Clientes con Membresía</span>
+            </a>
+          </li>
+           <li>
+            <a href="usuarios.php">
+              <i class="bi bi-person"></i>
+              <span>Usuarios</span>
             </a>
           </li>
          

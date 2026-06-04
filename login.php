@@ -1,12 +1,13 @@
 <?php
 if($_POST["funcion"]=="Valida_Usuario"){
 include("inc/conectar.php");
-	$Auto = $consulta->query("SELECT * FROM usuarios WHERE usuario LIKE '".$_POST["usuario"]."' AND pass LIKE '".$_POST["contraseña"]."'");
+	$Auto = $consulta->query("SELECT * FROM usuarios WHERE nombre LIKE '".$_POST["usuario"]."' AND pass LIKE '".$_POST["contrasena"]."'");
 	foreach ($Auto as $row);
-	if ($row['usuario']!="" ) {
+	if ($row['nombre']!="" ) {
 		echo "admin";
 		$_SESSION['SISTEMA']['idusuarios'] = $row['idusuarios'];
-		$_SESSION['SISTEMA']['usuario'] = $row['usuario'];
+		$_SESSION['SISTEMA']['usuario'] = $row['nombre'];
+		$_SESSION['SISTEMA']['tipo'] = $row['tipo'];
 	}else {
 		echo "Incorrecto";
 	}
@@ -35,7 +36,7 @@ include("inc/conectar.php");
                    </div>
                    <div class=""><br>
                      <b>&nbsp;Contraseña:</b>
-                     <input type="password" class="form-control" name="contraseña" id="contraseña" placeholder="Contraseña"><br>
+                     <input type="password" class="form-control" name="contrasena" id="contrasena" placeholder="Contraseña"><br>
                     </div>
                     <div class="form-check">
                       <button type="submit" id="ingresar" class="btn btn-success float-right">Ingresar</button>
@@ -76,9 +77,9 @@ $(document).ready(function(e) {
 				$("#usuario").focus();
 				return false;
 			}
-			 if($("#contraseña").val()==""){
+			 if($("#contrasena").val()==""){
 				alertify.error('Ingresa Una contraseña');
-			  $("#contraseña").focus();
+			  $("#contrasena").focus();
 				return false;
 			}
 			Validar();
@@ -92,9 +93,9 @@ $(document).ready(function(e) {
 			$("#usuario").focus();
 			return false;
 		}
-		 if($("#contraseña").val()==""){
+		 if($("#contrasena").val()==""){
 			alertify.error('Ingresa Una contraseña');
-		  $("#contraseña").focus();
+		  $("#contrasena").focus();
 			return false;
 		}
 		Validar();
@@ -106,18 +107,19 @@ $(document).ready(function(e) {
 		data: ({
 		  funcion : "Valida_Usuario",
 		  usuario : $ ("#usuario").val(),
-		  contraseña : $ ("#contraseña").val()
+		  contrasena : $ ("#contrasena").val()
 		}),
 		dataType: "html",
 		async:false,
 		success: function(msg){
+			console.log(msg);
 		  if (msg=="admin") {
 			alertify.success('Bienvenido admin');
 			window.location="index.php";
 		  }else{
 			alertify.error('Error al ingresar');
 			$("#usuario").val("");
-			$("#contraseña").val("");
+			$("#contrasena").val("");
 			$("#usuario").focus();
 		  }
 		}

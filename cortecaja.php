@@ -7,14 +7,16 @@ if ($_POST['funcion'] == 'membresias') {
   $desde = $_POST['desde'];
   $asta = $_POST['asta'];
 
-  $Auto = $consulta->query("SELECT clientesmembresias.*, membresias.nombre AS membresia, clientes.nombre AS cliente, clientes.codigo AS codigo FROM clientesmembresias LEFT JOIN membresias ON membresias.idmembresia=clientesmembresias.idmembresias LEFT JOIN clientes ON clientes.idclientes=clientesmembresias.idclientes WHERE clientesmembresias.fechapago BETWEEN '" . $desde . " 00:00:00' AND '" . $asta . " 23:00:00'");
+    $Auto = $consulta->query("SELECT * FROM movimientoscaja LEFT JOIN clientes ON movimientoscaja.idclientes = clientes.idclientes WHERE tipo='Membresia' AND fecha BETWEEN '" . $desde . " 00:00:00' AND '" . $asta . " 23:00:00'");
   foreach ($Auto as $row) {
     $totalMEMBRESIAS += $row['importe'];
+    //formato de fecha mexico 
+    $row['fechapago'] = date("d/m/Y H:i:s", strtotime($row['fechapago']));
     ?>
     <tr>
-      <td align="left"><?=substr($row['fechapago'],10,10)." ".substr($row['fechapago'],8,2)."-".substr($row['fechapago'],5,2)."-".substr($row['fechapago'],0,4)?></td>
+      <td align="left"><?= $row['fechapago'] ?></td>
       <td><?= $row['membresia']?></td>
-      <td><?= $row['codigo']."-".$row['cliente']?></td>
+      <td><?= $row['codigo']."-".$row['nombre']?></td>
       <td align="right">$ <?= number_format($row['importe'], 2) ?></td>
     </tr>
 <?
@@ -38,7 +40,7 @@ if ($_POST['funcion'] == 'membresias') {
     foreach ($Auto as $row) {
       $totalRETIRO += $row['importe'];
     }
-    $Auto = $consulta->query("SELECT clientesmembresias.*, membresias.nombre AS membresia, clientes.nombre AS cliente, clientes.codigo AS codigo FROM clientesmembresias LEFT JOIN membresias ON membresias.idmembresia=clientesmembresias.idmembresias LEFT JOIN clientes ON clientes.idclientes=clientesmembresias.idclientes WHERE clientesmembresias.fechapago BETWEEN '" . $desde . " 00:00:00' AND '" . $asta . " 23:00:00'");
+    $Auto = $consulta->query("SELECT * FROM movimientoscaja LEFT JOIN clientes ON movimientoscaja.idclientes = clientes.idclientes WHERE tipo='Membresia' AND fecha BETWEEN '" . $desde . " 00:00:00' AND '" . $asta . " 23:00:00'");
   foreach ($Auto as $row) {
     $totalMEMBRESIAS += $row['importe'];
 
@@ -178,9 +180,6 @@ if ($_POST['funcion'] == 'ingreso') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
-
-
 <head>
   <meta charset="UTF-8">
   <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
@@ -197,10 +196,9 @@ if ($_POST['funcion'] == 'ingreso') {
   <!-- Google Fonts Roboto -->
   <!-- Bootstrap core CSS -->
   <link rel="stylesheet" href="css/bootstrap.min.css">
-  <!-- Material Design Bootstrap -->
-  <!--  <link rel="stylesheet" href="css/mdb.min.css">
-  -->
-  <!-- Your custom styles (optional) -->
+   <link rel="stylesheet" href="alertifyjs/css/alertify.css">
+    <link rel="stylesheet" href="alertifyjs/css/themes/bootstrap.css">
+    <script src="alertifyjs/alertify.js"></script>
 </head>
 
 <body>

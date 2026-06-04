@@ -1,56 +1,21 @@
 <?
-if($_POST['funcion']=='Carga_Ventas'){
+if($_POST['funcion']=='Carga_Puerta'){
 	include("inc/conectar.php");
 	$tipo = '';
 	
 	$cancelado = '';
-
-	$resultados=$consulta->query("SELECT * FROM ventas WHERE fecha BETWEEN '".$_POST['fechai']." 00:00:00' AND '".$_POST['fechaf']." 23:00:00' ");
+	$resultados=$consulta->query("SELECT puerta.*, usuarios.nombre AS usuarios FROM puerta LEFT JOIN usuarios ON puerta.idusuarios = usuarios.idusuarios WHERE fecha BETWEEN '".$_POST['fechai']." 00:00:00' AND '".$_POST['fechaf']." 23:00:00' ");
 	foreach ($resultados as $row) {
-		if($row['tipo']=='Cancelada')$cancelado = 'bg-danger';
 		$fecha = date("d-m-Y H:i:s",strtotime($row['fecha']));
 	?>
-	<tr class="<?=$cancelado?> text-uppercase">
-		<td><?=str_pad($row["folio"], 6, "0", STR_PAD_LEFT)?></td>
+	<tr text-uppercase">
 		<td><?=$fecha?></td>
-		<td align="right">$ <?=number_format($row['importe'],2)?></td>
-		<td>
-			<a href="ticket_venta.php?idventas=<?=$row['folio']?>" target="_blank"><button class='btn-group btn-group-xs btn-success' title='Ticket' ><i class="bi bi-eye"></i></button></a>
-			<?
-            
-			if($row['tipo']!='Cancelada'){
-				//if($_SESSION["SISTEMA"]["tipo"]=='admin'){
-				?>
-			<button class='btn-group btn-group-xs btn-warning cancelar' registros="<?=$row[0]?>" title='Cancelar Venta' >
-            <i class="bi bi-x-circle"></i></button>
-			<?
-           		
-			}else{
-				?>
-			<button class='btn-group btn-group-xs btn-secondary' registros="<?=$row[0]?>" title='Venta Cancelada' disabled>
-			<i class="bi bi-x-circle"></i> Cancelada</button>
-			<?
-			}
-			?>
-		</td>
+		<td><?=$row['motivo']?></td>
+		<td><?=$row['usuarios']?></td>
 	</tr>
 <?
-	$cancelado = '';
 	}
 	exit();
-}
-if($_POST['funcion']=='Eliminar'){
-include('inc/conectar.php');
-	$Auto = $consulta->query("UPDATE ventas SET tipo='Cancelada' WHERE idventas=".$_POST['idregistro']." ");
-	foreach ($Auto as $Autocontador);
-	exit();
-}
-function Auto_Tabla(){
-	include("inc/conectar.php");
-	$Auto = $consulta->query("SHOW TABLE STATUS Like 'cxc'");
-	foreach ($Auto as $Autocontador);
-	$Auto = ($Autocontador["Auto_increment"]);
-	return $Auto;
 }
 ?>
 <!DOCTYPE html>
@@ -58,7 +23,7 @@ function Auto_Tabla(){
 <head>
 	<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="img/favicon.ico" type="image/x-icon">
-	<title> Consulta de Ventas</title>
+	<title> Consulta de Reilete</title>
     <link href="css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
@@ -87,7 +52,7 @@ function Auto_Tabla(){
         <div class="col-md-9">
             <div class="row">
                 <div class="col-md-12 text-center ">
-                	<h4><i class="bi bi-calendar2-week"></i> Consulta de Ventas</h4>
+                	<h4><i class="bi bi-calendar2-week"></i> Consulta de Reilete</h4>
                 </div>
             </div>
             <div class="row">
@@ -111,15 +76,14 @@ function Auto_Tabla(){
                     <table id="example" class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Folio</th>
                                 <th>Fecha</th>
-                                <th>Importe</th>
-                                <th width="150" align="center"></th>
+                                <th>Motivo</th>
+                                <th>Usuario</th>
                             </tr>
                         </thead>
                         <tbody id="resultados_productos">
                             <tr>
-                                <td colspan="4">Sin Resultados</td>
+                                <td colspan="3">Sin Resultados</td>
                             </tr>
                         </tbody>
                     </table>
@@ -138,17 +102,17 @@ $(document).ready(function(e) {
 		var ruta = '<?=$_SERVER["REQUEST_URI"];?>';
 		ruta = ruta.split("?");
 		if(ruta[1]== undefined){
-			window.location = "ver_ventas.php?fechainicial="+$("#fechainicial").val()+"&fechafinal="+$("#fechafinal").val();
+			window.location = "registro_torniquete.php?fechainicial="+$("#fechainicial").val()+"&fechafinal="+$("#fechafinal").val();
 		}else{
-			window.location = "ver_ventas.php?fechainicial="+$("#fechainicial").val()+"&fechafinal="+$("#fechafinal").val();
+			window.location = "registro_torniquete.php?fechainicial="+$("#fechainicial").val()+"&fechafinal="+$("#fechafinal").val();
 		}
 	});
 	function Carga_Entradas(){
 		$.ajax({
 			type: "POST",
-			url: "ver_ventas.php",
+			url: "registro_torniquete.php",
 			data: ({
-				funcion : "Carga_Ventas",
+				funcion : "Carga_Puerta",
 				fechai : $("#fechainicial").val(),
 				fechaf : $("#fechafinal").val()
 			}),
@@ -156,6 +120,7 @@ $(document).ready(function(e) {
 			async:false,
 			success: function(msg){
 				$("#resultados_productos").html(msg);
+				console.log(msg);
 				$('#example').DataTable( {
 					order: [
 						[0, 'desc']
@@ -188,26 +153,7 @@ $(document).ready(function(e) {
 		});
 	}
 	
-	$(document).on("click",".cancelar",function(){
-		var idregistro = $(this).attr("registros");
-		alertify.confirm("Eliminacion",'¿Estas Seguro de Cancelar la Venta ?', function(){
-			$.ajax({
-				type: "POST",
-				url: "<?=$_SERVER["PHP_SELF"]?>",
-				data: ({
-					funcion : "Eliminar",
-					idregistro : idregistro
-				}),
-				dataType: "html",
-				async:false,
-				success: function(msg){
-					alertify.success("Venta Cancelada Exitosamente "+msg);
-					window.location = "ver_ventas.php?fechainicial="+$("#fechainicial").val()+"&fechafinal="+$("#fechafinal").val();
-				}
-			});
-		}, function(){
-		alertify.error('Cancelado')});
-	});
+	
 
 	function Quita_Moneda(n){
 		n=String(n);

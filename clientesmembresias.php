@@ -24,11 +24,16 @@ include("inc/conectar.php");
 	if($_POST['genero'] != 'Todos'){
 		$estado .= " AND genero = '".$_POST['genero']."' ";
 	}
-	$resultados=$consulta->query("SELECT clientes.*, clases.nombre AS clase FROM clientes LEFT JOIN clases ON clases.idclases=clientes.idclases WHERE clientes.fechabaja IS NULL ".$estado." ORDER BY clientes.nombre");
+	$resultados=$consulta->query("SELECT * FROM clientes WHERE clientes.fechabaja IS NULL ".$estado." ORDER BY clientes.nombre");
 	foreach ($resultados as $row) {
 		$row['fechapago'] = date("d-m-Y",strtotime($row['fechapago']));
 		$row['fechaexpiracion'] = date("d-m-Y",strtotime($row['fechaexpiracion']));
 		$row['fecharegistro'] = date("d-m-Y",strtotime($row['fecharegistro']));
+		$diasmembresia = (strtotime($row['fechaexpiracion']) - strtotime(date("Y-m-d")))/86400;
+		$row['dias_membresia'] = floor($diasmembresia);
+		if($row['dias_membresia'] < 0) {
+			$row['dias_membresia'] = 0;
+		}
 	?>
 	<tr>
 		<td>
