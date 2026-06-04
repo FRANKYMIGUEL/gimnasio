@@ -1,17 +1,20 @@
 <?php
-class HikvisionService {
+class HikvisionService
+{
     private string $ip;
     private string $username;
     private string $password;
 
-    public function __construct(string $ip, string $username, string $password) {
+    public function __construct(string $ip, string $username, string $password)
+    {
         $this->ip = $ip;
         $this->username = $username;
         $this->password = $password;
     }
 
     // Encargado de realizar las consultas
-    private function request(string $method, string $endpoint, ?array $body = null): array {
+    private function request(string $method, string $endpoint, ?array $body = null): array
+    {
         //Creacion de la ip mas endpoint
         $url = "http://{$this->ip}{$endpoint}";
 
@@ -30,7 +33,7 @@ class HikvisionService {
             CURLOPT_CONNECTTIMEOUT => 5
         ]);
 
-        if($body !== null) {
+        if ($body !== null) {
             curl_setopt(
                 $ch,
                 CURLOPT_POSTFIELDS,
@@ -45,7 +48,7 @@ class HikvisionService {
             CURLINFO_HTTP_CODE
         );
 
-        if(curl_errno($ch)){
+        if (curl_errno($ch)) {
             throw new Exception(
                 curl_error($ch)
             );
@@ -60,7 +63,8 @@ class HikvisionService {
     }
 
     // Funcion para realizar request con multiples partes (imagenes)
-    private function requestMultipart(string $method, string $endpoint, array $postFields): array {
+    private function requestMultipart(string $method, string $endpoint, array $postFields): array
+    {
         $url = "http://{$this->ip}{$endpoint}";
 
         $ch = curl_init();
@@ -77,7 +81,7 @@ class HikvisionService {
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        if(curl_errno($ch)) {
+        if (curl_errno($ch)) {
             throw new Exception(curl_error($ch));
         }
 
@@ -92,7 +96,8 @@ class HikvisionService {
     }
 
     // Obtener numero total de usuarios registrados
-    public function getUserCount(): array {
+    public function getUserCount(): array
+    {
         return $this->request(
             'GET',
             '/ISAPI/AccessControl/UserInfo/Count'
@@ -100,7 +105,8 @@ class HikvisionService {
     }
 
     // Obtener todos los usuarios
-    public function getUsers(int $position = 0, int $maxResults = 30): array {
+    public function getUsers(int $position = 0, int $maxResults = 30): array
+    {
         return $this->request(
             'POST',
             '/ISAPI/AccessControl/UserInfo/Search?format=json',
@@ -115,7 +121,8 @@ class HikvisionService {
     }
 
     // Creacion de un nuevo usuario (SIN FOTO)
-    public function createUser(string $employeeNo, string $name, string $beginTime, string $endTime): array {
+    public function createUser(string $employeeNo, string $name, string $beginTime, string $endTime): array
+    {
         return $this->request(
             'POST',
             '/ISAPI/AccessControl/UserInfo/Record?format=json',
@@ -137,7 +144,8 @@ class HikvisionService {
     }
 
     // Eliminación del usuario
-    public function deleteUser(string $employeeNo): array {
+    public function deleteUser(string $employeeNo): array
+    {
         return $this->request(
             'PUT',
             '/ISAPI/AccessControl/UserInfo/Delete?format=json',
@@ -152,71 +160,74 @@ class HikvisionService {
             ]
         );
     }
-    public function uploadUserFace(string $employeeNo, string $imagePath): array {
-    $endpoint = '/ISAPI/AccessControl/UserInfo/Face?format=json';
-    $url = "http://{$this->ip}{$endpoint}";
+    public function uploadUserFace(string $employeeNo, string $imagePath): array
+    {
+        $endpoint = '/ISAPI/AccessControl/UserInfo/Face?format=json';
+        $url = "http://{$this->ip}{$endpoint}";
 
-    // 1. Crear el JSON de asociación
-    $faceData = json_encode([
-        'FaceInfoInfo' => [
-            'employeeNo' => $employeeNo,
-            'faceLibType' => 'blackSheet' // Tipo por defecto en Hikvision
-        ]
-    ]);
-
-    // 2. Preparar los datos multipart (CURLFile requiere PHP 5.5+)
-    $postData = [
-        'FaceInfoInfo' => $faceData,
-        'img' => new CURLFile($imagePath, 'image/jpeg', 'face.jpg')
-    ];
-
-    $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_USERPWD => "{$this->username}:{$this->password}",
-        CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $postData,
-        // Al enviar un array en CURLOPT_POSTFIELDS, cURL configura automáticamente el Content-Type a multipart/form-data
-    ]);
-
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-    if(curl_errno($ch)) {
-        throw new Exception('Error cURL:' . curl_error($ch));
-    }
-    curl_close($ch);
-
-    if($httpCode !== 200) {
-        throw new Exception("Error HTTP {$httpCode}. Respuesta: " . $response);
-    }
-
-    return json_decode($response, true);
-}
-    //actualizo fecha de expiracion del usuario
-   public function updateUserExpiration(string $employeeNo, string $beginTime, string $endTime): array {
-    return $this->request(
-        'PUT', // Mantenemos PUT
-        '/ISAPI/AccessControl/UserInfo/Modify?format=json', // <--- Cambiado de Record a Modify
-        [
-            'UserInfo' => [
+        // 1. Crear el JSON de asociación
+        $faceData = json_encode([
+            'FaceInfoInfo' => [
                 'employeeNo' => $employeeNo,
-                // En el endpoint /Modify no siempre es necesario el campo 'mode'
-                'Valid' => [
-                    'enable' => true,
-                    'beginTime' => $beginTime,
-                    'endTime' => $endTime,
-                    'timeType' => 'local'
+                'faceLibType' => 'blackSheet' // Tipo por defecto en Hikvision
+            ]
+        ]);
+
+        // 2. Preparar los datos multipart (CURLFile requiere PHP 5.5+)
+        $postData = [
+            'FaceInfoInfo' => $faceData,
+            'img' => new CURLFile($imagePath, 'image/jpeg', 'face.jpg')
+        ];
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_USERPWD => "{$this->username}:{$this->password}",
+            CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $postData,
+            // Al enviar un array en CURLOPT_POSTFIELDS, cURL configura automáticamente el Content-Type a multipart/form-data
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if (curl_errno($ch)) {
+            throw new Exception('Error cURL:' . curl_error($ch));
+        }
+        curl_close($ch);
+
+        if ($httpCode !== 200) {
+            throw new Exception("Error HTTP {$httpCode}. Respuesta: " . $response);
+        }
+
+        return json_decode($response, true);
+    }
+    //actualizo fecha de expiracion del usuario
+    public function updateUserExpiration(string $employeeNo, string $beginTime, string $endTime): array
+    {
+        return $this->request(
+            'PUT', // Mantenemos PUT
+            '/ISAPI/AccessControl/UserInfo/Modify?format=json', // <--- Cambiado de Record a Modify
+            [
+                'UserInfo' => [
+                    'employeeNo' => $employeeNo,
+                    // En el endpoint /Modify no siempre es necesario el campo 'mode'
+                    'Valid' => [
+                        'enable' => true,
+                        'beginTime' => $beginTime,
+                        'endTime' => $endTime,
+                        'timeType' => 'local'
+                    ]
                 ]
             ]
-        ]
-    );
-}
+        );
+    }
 
     // Buscar usuario especifico por ID
-    public function getUserByID(string $employeeNo): array {
+    public function getUserByID(string $employeeNo): array
+    {
         return $this->request(
             'POST',
             '/ISAPI/AccessControl/UserInfo/Search?format=json',
@@ -235,10 +246,11 @@ class HikvisionService {
         );
     }
 
-   
+
 
     // Captura de imagenes sin guardar mediante el terminal hikvision
-    public function getLivePicture(): string { // Quitamos el parámetro que no se usaba
+    public function getLivePicture(): string
+    { // Quitamos el parámetro que no se usaba
         $endpoint = '/ISAPI/Streaming/channels/101/picture';
         $url = "http://{$this->ip}{$endpoint}";
 
@@ -254,19 +266,20 @@ class HikvisionService {
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        if(curl_errno($ch)) {
+        if (curl_errno($ch)) {
             throw new Exception('Error cURL:' . curl_error($ch));
         }
         curl_close($ch);
 
-        if($httpCode !== 200) {
+        if ($httpCode !== 200) {
             throw new Exception("Error HTTP {$httpCode}. Asegúrate de que el canal 101 exista (Stream principal).");
         }
 
         return $response;
     }
 
-    public function captureAndSaveFace(string $employeeNo): array {
+    public function captureAndSaveFace(string $employeeNo): array
+    {
         $endpoint = '/ISAPI/AccessControl/CaptureFace?format=json';
         $url = "http://{$this->ip}{$endpoint}";
 
@@ -295,13 +308,13 @@ class HikvisionService {
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        if(curl_errno($ch)) {
+        if (curl_errno($ch)) {
             throw new Exception('Error cURL:' . curl_error($ch));
         }
 
         curl_close($ch);
 
-        if($httpCode !== 200) {
+        if ($httpCode !== 200) {
             throw new Exception("Error HTTP {$httpCode}. Respuesta del equipo: " . $response);
         }
 
@@ -309,7 +322,8 @@ class HikvisionService {
     }
 
     // Toma de la captura para despues ser guardada con el numero de empleado
-    public function takeLivePicture(string $employeeNo): bool {
+    public function takeLivePicture(string $employeeNo): bool
+    {
         $savePath = __DIR__ . "/capturas/rostro{$employeeNo}.jpg";
 
         $image = $this->getLivePicture();
@@ -325,9 +339,10 @@ class HikvisionService {
 
 
     // asignacion de foto
-    public function updateFace(string $employeeNo): array {
+    public function updateFace(string $employeeNo): array
+    {
         $imagePath = __DIR__ . "/capturas/rostro{$employeeNo}.jpg";
-        if(!file_exists($imagePath)){
+        if (!file_exists($imagePath)) {
             throw new Exception("La imagen no existe en la ruta especificada: {$imagePath}");
         }
 
@@ -348,7 +363,8 @@ class HikvisionService {
             $postFields
         );
     }
-    public function opendoor(string $employeeNo): array {
+    public function opendoor(string $employeeNo): array
+    {
         return $this->request(
             'POST',
             '/ISAPI/AccessControl/RemoteControl/doorTrigger?format=json',
@@ -361,8 +377,8 @@ class HikvisionService {
             ]
         );
     }
-    
-    
+
+
 
     // TODO: Evento para abrir la puerta manualmente LISTO
     // TODO: Implementación de cron jobs para actualizar membresías y revisión de los datos LISTO
@@ -371,13 +387,13 @@ class HikvisionService {
     // TODO: Job de finalización de membresías - (actualización de fechas en backend y hikvision)
 
 
-public function probar(string $endpoint, string $method = 'GET'): array
-{
-    return $this->request(
-        $method,
-        $endpoint
-    );
-}
+    public function probar(string $endpoint, string $method = 'GET'): array
+    {
+        return $this->request(
+            $method,
+            $endpoint
+        );
+    }
 
 
 }
@@ -385,10 +401,11 @@ public function probar(string $endpoint, string $method = 'GET'): array
 
 try {
     //$controlador = new HikvisionService('192.168.18.102', 'admin', 'simbiosis2026');
-   // $controlador = new HikvisionService('192.0.0.64', 'admin', 'simbiosis2026');
+    // $controlador = new HikvisionService('192.0.0.64', 'admin', 'simbiosis2026');
     //$controlador->takeLivePicture('17');
     //$result = $controlador->updateFace('17');
-   // print_r($result);
+    // print_r($result);
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();
 }
+
