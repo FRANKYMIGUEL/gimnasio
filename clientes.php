@@ -165,14 +165,12 @@ include("inc/conectar.php");
 if($_POST['funcion']=='Guardar'){
 include("inc/conectar.php");
 include("controlador_lector.php");
-	$controlador = new HikvisionReaderXML($IP, $Usuario, $Contrasena);
 	$Auto = $consulta->query("SELECT MAX(idclientes)+1 AS Auto_increment FROM clientes");
 	foreach ($Auto as $Autocontador);
 	$CODIGO =str_pad($Autocontador["Auto_increment"], 6, "0", STR_PAD_LEFT);
 	$Auto = $consulta->query("INSERT INTO clientes SET codigo='".$CODIGO."', nombre='".$_POST['nombre']."', domicilio='".$_POST['domicilio']."', idmembresia='".$_POST['idmembresia']."', membresia='".$_POST['membresia']."', telefono='".$_POST['telefono']."', observaciones='".$_POST['observaciones']."', genero='".$_POST['genero']."' ");
 	foreach ($Auto as $Autocontador);
-
-	$controlador->agregarUsuario($Autocontador["Auto_increment"], $_POST['nombre']);
+	$controlador->createUser($Autocontador["Auto_increment"], $_POST['nombre'], date("Y-m-d\TH:i:s"), date("Y-m-d\TH:i:s", strtotime("+1 day")));
 	echo $CODIGO;
 exit();
 }
