@@ -238,7 +238,7 @@ class HikvisionService {
    
 
     // Captura de imagenes sin guardar mediante el terminal hikvision
-    public function getLivePicture(): string { // Quitamos el parámetro que no se usaba
+    public function getLivePicture($username,$password): string { // Quitamos el parámetro que no se usaba
         $endpoint = '/ISAPI/Streaming/channels/101/picture';
         $url = "http://{$this->ip}{$endpoint}";
 
@@ -246,7 +246,7 @@ class HikvisionService {
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_USERPWD => "{$this->username}:{$this->password}",
+            CURLOPT_USERPWD => "{$username}:{$password}",
             CURLOPT_HTTPAUTH => CURLAUTH_DIGEST,
             CURLOPT_CUSTOMREQUEST => 'GET',
         ]);
@@ -261,6 +261,9 @@ class HikvisionService {
 
         if($httpCode !== 200) {
             throw new Exception("Error HTTP {$httpCode}. Asegúrate de que el canal 101 exista (Stream principal).");
+        }else {
+            // Retornamos la imagen en crudo para que pueda ser guardada directamente
+            return $response;
         }
 
         return $response;
@@ -310,7 +313,7 @@ class HikvisionService {
 
     // asignacion de foto
     public function updateFace(string $employeeNo): array {
-        $imagePath = __DIR__ . "/capturas/rostro{$employeeNo}.jpg";
+        $imagePath = "/capturas/rostro{$employeeNo}.jpg";
         if(!file_exists($imagePath)){
             throw new Exception("La imagen no existe en la ruta especificada: {$imagePath}");
         }
@@ -331,6 +334,23 @@ class HikvisionService {
             '/ISAPI/Intelligent/FDLib/FaceDataRecord?format=json',
             $postFields
         );
+    }
+
+    public function takeLivePicture(string $employeeNo, $username, $password): bool {
+        $savePath = "/capturas/rostro{$employeeNo}.jpg";
+        $image = $this->getLivePicture($username, $password);
+        if(!file_exists($savePath)){
+            mkdir(dirname($savePath), 0777, true);
+        }else {
+            // Si el archivo ya existe, lo eliminamos para evitar conflictos
+            unlink($savePath);
+        }
+
+        $saved = file_put_contents(
+            $savePath,
+            $image
+        );
+        return $saved !== false;
     }
     public function opendoor(string $employeeNo): array {
         return $this->request(

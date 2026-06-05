@@ -52,24 +52,25 @@ foreach ($Auto as $permisos) {
               <span>Abrir Puerta</span>
             </a>
           </li>
-          <li class="sidebar-dropdown">
-            <a href="#">
-              <i class="bi bi-gear-wide-connected"></i>
-              <span>Panel de Control</span>
+           <li>
+            <a href="clientes.php">
+              <i class="bi bi-bar-chart"></i>
+              <span>Clientes</span>
             </a>
-            <div class="sidebar-submenu">
-              <ul>
-                <li>
-                  <a href="clientesmembresias.php"><i class="bi bi-card-list"></i> Membresias
-                  </a>
-                </li>
-                 <li>
-                  <a href="clientes.php"><i class="bi bi-people"></i> Clientes
-                  </a>
-                </li>
-              </ul>
-            </div>
           </li>
+          <li>
+            <a href="clientesmembresias.php">
+              <i class="bi bi-people"></i>
+              <span>Clientes con Membresía</span>
+            </a>
+          </li>
+           <li>
+            <a href="membresias.php">
+              <i class="bi bi-bar-chart"></i>
+              <span>Membresias</span>
+            </a>
+          </li>
+          
           <li class="sidebar-dropdown">
             <a href="#">
               <i class="bi bi-cash-stack"></i>
@@ -128,12 +129,7 @@ foreach ($Auto as $permisos) {
               <span>Registro de Torniquete</span>
             </a>
           </li>
-           <li>
-            <a href="clientes.php">
-              <i class="bi bi-people"></i>
-              <span>Clientes con Membresía</span>
-            </a>
-          </li>
+           
            <li>
             <a href="usuarios.php">
               <i class="bi bi-person"></i>
