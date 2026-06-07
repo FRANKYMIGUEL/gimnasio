@@ -188,9 +188,10 @@ if ($_POST['funcion'] == 'Guardar') {
 }
 
 // ----------------- FIN FUNCIONES DE CRUD ------------------------------
-
+// ultima modificacion - sincronizar cliente con el lector y cambiar el estado a 1 en BD
 if ($_POST['funcion'] == 'Registrar_Pago') {
 	include("inc/conectar.php");
+	$idregistro = $_POST['idregistro'];
 	$duracion = $_POST['duracion'];
 	$fechaexpiracion = date("Y-m-d H:i:s", strtotime("+ $duracion day"));
 	$Auto = $consulta->query("UPDATE clientes SET fechapago='" . date("Y-m-d H:i:s") . "', importepago='" . $_POST['importepago'] . "', fechaexpiracion='" . $fechaexpiracion . "' WHERE idclientes=" . $_POST['idregistro']);
@@ -202,11 +203,28 @@ if ($_POST['funcion'] == 'Registrar_Pago') {
 		$fechaInicio = date("Y-m-d\TH:i:s");
 		$fechaFin = date("Y-m-d\TH:i:s", strtotime("+$duracion day"));
 
-		$respuesta = $controlador->updateUserExpiration(
-			$_POST['idregistro'],
-			$fechaInicio,
-			$fechaFin
-		);
+		// obtencion del status del cliente
+		$query = $consulta->query("SELECT nombre, dispositivo, imagen FROM clientes WHERE idclientes = " . $idregistro);
+		foreach ($query as $client)
+			;
+
+		if ($client['dispositivo'] == 1) {
+			$respuesta = $controlador->updateUserExpiration(
+				$_POST['idregistro'],
+				$fechaInicio,
+				$fechaFin
+			);
+		} else {
+			$respuesta = $controlador->createUser($idregistro, $client['nombre'], $fechaInicio, $fechaFin);
+
+			if ($respuesta['status'] == 200) {
+				if (!empty($client['imagen']) && file_exists($cliente['imagen'])) {
+					$controlador->updateFace($idregistro);
+				}
+				$consulta->query("UPDATE clientes SET dispositivo = 1 WHERE idclientes = " . $idregistro);
+			}
+		}
+
 
 		//insertanmos el pago en la tabla de movimientoscaja
 		$Auto = $consulta->query("INSERT INTO movimientoscaja SET idclientes=" . $_POST['idregistro'] . ", importe='" . $_POST['importepago'] . "', fecha='" . date("Y-m-d H:i:s") . "', tipo='Membresia', observaciones='Pago de Membresia', idusuarios=" . $_SESSION['SISTEMA']['idusuarios'] . ", usuarios='" . $_SESSION['SISTEMA']['usuario'] . "'");
@@ -895,7 +913,8 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 							if (response.success) {
 								alertify.success('Cliente sincronizado correctamente.');
 								setTimeout(function () {
-									window.location = "clientes.php";
+									Carga_Modal("Editar", idregistro);
+									Cargar_Costos();
 								}, 1500);
 							} else {
 								alertify.error('Error al sincronizar el cilente.');
@@ -910,7 +929,7 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 				});
 			});
 
-
+			// Guardar el cliente
 			$(document).on("click", "#Guardar", function (e) {
 				if ($("#nombre").val() == "") {
 					alertify.error("Ingresa un Nombre");
@@ -949,6 +968,7 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 					}
 				});
 			});
+			// Edicion del cliente
 			$(document).on("click", "#editar_producto", function (e) {
 				var idregistro = $(this).attr("idregistro");
 				if ($("#nombre").val() == "") {
@@ -977,9 +997,9 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 					success: function (response) {
 						if (response.success) {
 							alertify.success(response.mensaje);
-							setTimeout({
-								window.location = 'clientes.php';
-							}, 2000)
+							setTimeout(function () {
+								window.location = "clientes.php";
+							}, 2000);
 						} else {
 							alertify.error('Error al modificar.', response.mensaje);
 						}
