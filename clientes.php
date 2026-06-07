@@ -742,13 +742,14 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 			$('#modalFoto').on('hidden.bs.modal', function () {
 				let idregistro = $('#guardarFotoModal').attr('idregistro');
 				$("#previewFoto").attr("src", "./img/placeholderFotoPerfil.jpg");
+				$('#alertaFotoModals').html('');
 				$.ajax({
 					type: "POST",
 					url: "clientes.php",
 					data: ({
 						funcion: "limpiarFotoTemporal",
 						idregistro: idregistro
-					})
+					}),
 				});
 			});
 
