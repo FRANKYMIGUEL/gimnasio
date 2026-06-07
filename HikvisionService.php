@@ -378,6 +378,27 @@ class HikvisionService
         );
     }
 
+    // Actualización de datos generales del usuario (Nombre y Vigencia)
+    public function updateUser(string $employeeNo, string $name, string $beginTime, string $endTime): array
+    {
+        return $this->request(
+            'PUT',
+            '/ISAPI/AccessControl/UserInfo/Modify?format=json',
+            [
+                'UserInfo' => [
+                    'employeeNo' => $employeeNo,
+                    'name' => $name,
+                    'userType' => 'normal',
+                    'Valid' => [
+                        'enable' => true,
+                        'beginTime' => $beginTime,
+                        'endTime' => $endTime,
+                        'timeType' => 'local'
+                    ]
+                ]
+            ]
+        );
+    }
 
 
     // TODO: Implementación del nuevo proceso de registro con cámara (flujo)

@@ -16,25 +16,25 @@ if ($_POST['funcion'] == 'Carga_Clientes') {
 		$row['fecharegistro'] = date("d-m-Y", strtotime($row['fecharegistro']));
 		?>
 		<tr>
-			<td>
+			<td class="align-middle text-center">
 				<button type="button" class="btn btn-default btn-sm btn-primary">
 					<?= $row['codigo'] ?>
 				</button>
 			</td>
-			<td><?= $row['nombre'] ?></td>
-			<td><?= $row['domicilio'] ?></td>
-			<td><?= $row['genero'] ?></td>
-			<td><?= $row['telefono'] ?></td>
-			<td><?= substr($row['fechapago'], 0, 10) ?></td>
-			<td><?= substr($row['fechaexpiracion'], 0, 10) ?></td>
-			<td>
+			<td class="align-middle text-center"><?= $row['nombre'] ?></td>
+			<td class="align-middle text-center"><?= $row['domicilio'] ?></td>
+			<td class="align-middle text-center"><?= $row['genero'] ?></td>
+			<td class="align-middle text-center"><?= $row['telefono'] ?></td>
+			<td class="align-middle text-center"><?= substr($row['fechapago'], 0, 10) ?></td>
+			<td class="align-middle text-center"><?= substr($row['fechaexpiracion'], 0, 10) ?></td>
+			<td class="align-middle text-center">
 				<?
 				$rutaImagen = $row['imagen'] ? $row['imagen'] : './img/placeholderFotoPerfil.jpg';
 				?>
-				<img src="<?= $rutaImagen ?>" width="100">
+				<img src="<?= $rutaImagen ?>" class="img-thumbnail" width="100">
 			</td>
-			<td><?= substr($row['fecharegistro'], 0, 10) ?></td>
-			<td class="d-flex align-items-center justify-content-center">
+			<td class="align-middle text-center"><?= substr($row['fecharegistro'], 0, 10) ?></td>
+			<td class="align-middle text-center">
 				<div class="btn-group " role="group">
 					<button type="button" class="btn btn-default btn-sm btn-info text-sm editar" data-toggle="modal"
 						data-target="#myModal" idregistro="<?= $row[0] ?>">
@@ -74,9 +74,38 @@ if ($_POST['funcion'] == 'Carga_Folio') {
 // Edicion de clientes
 if ($_POST['funcion'] == 'Editar_Productos') {
 	include("inc/conectar.php");
-	$Auto = $consulta->query("UPDATE clientes SET codigo='" . $_POST['codigo'] . "', nombre='" . $_POST['nombre'] . "', domicilio='" . $_POST['domicilio'] . "', idmembresia='" . $_POST['idmembresia'] . "', membresia='" . $_POST['membresia'] . "', telefono='" . $_POST['telefono'] . "', observaciones='" . $_POST['observaciones'] . "', genero='" . $_POST['genero'] . "' WHERE idclientes=" . $_POST['idregistro']);
-	foreach ($Auto as $Autocontador)
+	// Actualizacion en la BD
+	$consulta->query("UPDATE clientes SET codigo='" . $_POST['codigo'] . "', nombre='" . $_POST['nombre'] . "', domicilio='" . $_POST['domicilio'] . "', idmembresia='" . $_POST['idmembresia'] . "', membresia='" . $_POST['membresia'] . "', telefono='" . $_POST['telefono'] . "', observaciones='" . $_POST['observaciones'] . "', genero='" . $_POST['genero'] . "' WHERE idclientes=" . $_POST['idregistro']);
+
+	$resultadoBD = $consulta->query("SELECT dispositivo, fechaexpiracion FROM clientes WHERE " . $_POST['idregistro']);
+	foreach ($resultadoBD as $cliente)
 		;
+	if ($cliente && $cliente['dispositivo'] == 1) {
+		try {
+			$controlador = new HikvisionService($ip, $username, $password);
+
+			$fechaInicio = date("Y-m-d\TH:i:s");
+			if (!empty($cliente['fechaexpiracion']) && $cliente['fechaexpiracion'] != '1969-12-31') {
+				$fechaFin = date("Y-m-d\T23:59:59", strtotime($cliente['fechaexpiracion']));
+			} else {
+				$fechaFin = date("Y-m-d\TH:i:s", strtotime("+1 month"));
+			}
+
+			$controlador->updateUser($_POST['idregistro'], $_POST['nombre'], $fechaInicio, $fechaFin);
+
+		} catch (Exception $e) {
+			echo json_encode([
+				'success' => false,
+				'mensaje' => 'Error al sincronizar los cambios con el lector.'
+			]);
+		}
+	}
+
+	echo json_encode([
+		'success' => true,
+		'mensaje' => 'Cliente modificado exitosamente.'
+	]);
+
 	exit();
 }
 
@@ -449,6 +478,53 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 }
 // ---------------------------------- FIN CARGA DE MODAL ---------------------------------------------------------
 
+// Sincronizar usuario con el dispositivo
+if ($_POST['funcion'] == 'sincronizarCliente') {
+	include('inc/conectar.php');
+	$idregistro = $_POST['idregistro'];
+
+	// Extraccion de la informacion del cliente de la DB
+	$clienteDb = $consulta->query("SELECT * FROM clientes WHERE idclientes = " . $idregistro);
+	foreach ($clienteDb as $cliente)
+		;
+
+	try {
+		$controlador = new HikvisionService($ip, $username, $password);
+
+		// Verificacion de fecha de expiracion
+		$fechaInicio = date("Y-m-d\TH:i:s");
+		if (!empty($cliente['fechaexpiracion']) && $cliente['fechaexpiracion'] != '1969-12-31') {
+			// Le agregamos la hora límite al final del día
+			$fechaFin = date("Y-m-d\T23:59:59", strtotime($cliente['fechaexpiracion']));
+		} else {
+			$fechaFin = date("Y-m-d\TH:i:s", strtotime("+1 day"));
+		}
+
+		$responseCreate = $controlador->createUser($idregistro, $cliente['nombre'], $fechaInicio, $fechaFin);
+
+		if ($responseCreate['status'] == 200) {
+			$consulta->query("UPDATE clientes SET dispositivo = 1 WHERE idclientes = " . $idregistro);
+
+			echo json_encode([
+				'success' => true,
+				'mensaje' => 'Cliente sincronizado correctamente.'
+			]);
+		} else {
+			echo json_encode([
+				'success' => false,
+				'mensaje' => 'El dispositivo rechazo la sincronizacion'
+			]);
+		}
+	} catch (Exception $e) {
+		echo json_encode([
+			'success' => false,
+			'mensaje' => 'Error de conexion: ' . $e->getMessage()
+		]);
+	}
+
+	exit();
+}
+
 ?>
 
 
@@ -801,6 +877,39 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 				});
 			});
 
+			// Sincronizar cliente con el dispositivo
+			$(document).on("click", ".sincronizarCliente", function (e) {
+				var idregistro = $(this).attr("idregistro");
+
+				alertify.confirm('Sincronizar Cliente', '¿Deseas sincronizar este cliente con el dispositivo?', function () {
+					$.ajax({
+						type: "POST",
+						url: "clientes.php",
+						data: ({
+							funcion: "sincronizarCliente",
+							idregistro: idregistro
+						}),
+						dataType: "json",
+						async: false,
+						success: function (response) {
+							if (response.success) {
+								alertify.success('Cliente sincronizado correctamente.');
+								setTimeout(function () {
+									window.location = "clientes.php";
+								}, 1500);
+							} else {
+								alertify.error('Error al sincronizar el cilente.');
+							}
+						},
+						error: function (response) {
+							alertify.error('Error en la comunicacion con el dispositivo.');
+						}
+					});
+				}, function () {
+					alertify.error('Sincronización cancelada');
+				});
+			});
+
 
 			$(document).on("click", "#Guardar", function (e) {
 				if ($("#nombre").val() == "") {
@@ -863,12 +972,17 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 						observaciones: $("#observaciones").val(),
 						idregistro: idregistro
 					}),
-					dataType: "html",
+					dataType: "json",
 					async: false,
-					success: function (msg) {
-						console.log(msg);
-						alertify.success("Cliente Modificado Exitosamente ");
-						window.location = "clientes.php";
+					success: function (response) {
+						if (response.success) {
+							alertify.success(response.mensaje);
+							setTimeout({
+								window.location = 'clientes.php';
+							}, 2000)
+						} else {
+							alertify.error('Error al modificar.', response.mensaje);
+						}
 					}
 				});
 			});
@@ -901,6 +1015,8 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 					}
 				});
 			}
+
+
 		});
 	</script>
 </body>
