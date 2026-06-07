@@ -380,10 +380,7 @@ class HikvisionService
 
 
 
-    // TODO: Evento para abrir la puerta manualmente LISTO
-    // TODO: Implementación de cron jobs para actualizar membresías y revisión de los datos LISTO
     // TODO: Implementación del nuevo proceso de registro con cámara (flujo)
-    // TODO: Eliminar las clases y los horarios LISTO
     // TODO: Job de finalización de membresías - (actualización de fechas en backend y hikvision)
 
 
@@ -405,6 +402,11 @@ try {
     //$controlador->takeLivePicture('17');
     //$result = $controlador->updateFace('17');
     // print_r($result);
+
+    // $controlador = new HikvisionService('10.10.2.100', 'admin', 'simbiosis2026');
+    // $result = $controlador->updateFace('84');
+    // print_r($result);
+
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage();
 }
