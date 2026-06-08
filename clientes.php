@@ -77,7 +77,7 @@ if ($_POST['funcion'] == 'Editar_Productos') {
 	// Actualizacion en la BD
 	$consulta->query("UPDATE clientes SET codigo='" . $_POST['codigo'] . "', nombre='" . $_POST['nombre'] . "', domicilio='" . $_POST['domicilio'] . "', idmembresia='" . $_POST['idmembresia'] . "', membresia='" . $_POST['membresia'] . "', telefono='" . $_POST['telefono'] . "', observaciones='" . $_POST['observaciones'] . "', genero='" . $_POST['genero'] . "' WHERE idclientes=" . $_POST['idregistro']);
 
-	$resultadoBD = $consulta->query("SELECT dispositivo, fechaexpiracion FROM clientes WHERE " . $_POST['idregistro']);
+	$resultadoBD = $consulta->query("SELECT dispositivo, fechaexpiracion FROM clientes WHERE idclientes = " . $_POST['idregistro']);
 	foreach ($resultadoBD as $cliente)
 		;
 	if ($cliente && $cliente['dispositivo'] == 1) {

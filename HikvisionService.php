@@ -401,10 +401,6 @@ class HikvisionService
     }
 
 
-    // TODO: Implementación del nuevo proceso de registro con cámara (flujo)
-    // TODO: Job de finalización de membresías - (actualización de fechas en backend y hikvision)
-
-
     public function probar(string $endpoint, string $method = 'GET'): array
     {
         return $this->request(
@@ -414,21 +410,5 @@ class HikvisionService
     }
 
 
-}
-
-
-try {
-    //$controlador = new HikvisionService('192.168.18.102', 'admin', 'simbiosis2026');
-    // $controlador = new HikvisionService('192.0.0.64', 'admin', 'simbiosis2026');
-    //$controlador->takeLivePicture('17');
-    //$result = $controlador->updateFace('17');
-    // print_r($result);
-
-    // $controlador = new HikvisionService('10.10.2.100', 'admin', 'simbiosis2026');
-    // $result = $controlador->updateFace('84');
-    // print_r($result);
-
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
 }
 
