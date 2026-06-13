@@ -1,9 +1,9 @@
 <?php
 
-require_once '../HikvisionService.php';
-require_once '../inc/conectar.php';
+require('../HikvisionService.php');
+require('../inc/conectar.php');
 
-$ip = '192.168.18.102';
+$ip = '192.168.101.50';
 $username = 'admin';
 $password = 'simbiosis2026';
 

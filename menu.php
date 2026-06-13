@@ -7,9 +7,15 @@ if (!isset($_SESSION['SISTEMA']['usuario'])) {
   header("Location: login.php");
   exit();
 }
-
+$modulos = array();
+$Auto = $consulta->query("SELECT modulos.idmodulos FROM permisos LEFT JOIN modulos ON modulos.idmodulos=permisos.idmodulos WHERE idusuarios=" . $_SESSION['SISTEMA']['idusuarios'] . "");
+$contador = 0;
+foreach ($Auto as $permisos) {
+  $modulos[$contador] = $permisos[0];
+  $contador++;
+}
 ?>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
 <link rel="stylesheet" href="menu.css">
 <div class="page-wrapper chiller-theme toggled">
@@ -29,14 +35,13 @@ if (!isset($_SESSION['SISTEMA']['usuario'])) {
           <span class="user-name">Usuario: <? echo $_SESSION['SISTEMA']['usuario'] ?>
           </span>
         </div>
-       
+
       </div>
       <!-- sidebar-header  -->
       <div class="sidebar-menu">
         <ul>
           <li>
             <a href="index.php">
-              <i class="fa fa-home"></i>
               <i class="bi bi-house"></i>
               <span>Inicio</span>
             </a>
@@ -47,24 +52,25 @@ if (!isset($_SESSION['SISTEMA']['usuario'])) {
               <span>Abrir Puerta</span>
             </a>
           </li>
-          <li class="sidebar-dropdown">
-            <a href="#">
-              <i class="bi bi-gear-wide-connected"></i>
-              <span>Panel de Control</span>
+          <li>
+            <a href="clientes.php">
+              <i class="bi bi-bar-chart"></i>
+              <span>Clientes</span>
             </a>
-            <div class="sidebar-submenu">
-              <ul>
-                <li>
-                  <a href="clientesmembresias.php"><i class="bi bi-card-list"></i> Membresias
-                  </a>
-                </li>
-                 <li>
-                  <a href="clientes.php"><i class="bi bi-people"></i> Clientes
-                  </a>
-                </li>
-              </ul>
-            </div>
           </li>
+          <li>
+            <a href="clientesmembresias.php">
+              <i class="bi bi-people"></i>
+              <span>Clientes con Membresía</span>
+            </a>
+          </li>
+          <li>
+            <a href="membresias.php">
+              <i class="bi bi-bar-chart"></i>
+              <span>Membresias</span>
+            </a>
+          </li>
+
           <li class="sidebar-dropdown">
             <a href="#">
               <i class="bi bi-cash-stack"></i>
@@ -113,28 +119,24 @@ if (!isset($_SESSION['SISTEMA']['usuario'])) {
                 <li>
                   <a href="reporte_inventario.php"><i class="bi bi-clipboard-data"></i> Inventario</a>
                 </li>
-               
+
               </ul>
             </div>
           </li>
-           <li>
-            <a href="registro_torniquete.php">
-              <i class="bi bi-person-check"></i>
-              <span>Registro de Torniquete</span>
+
+
+          <li>
+            <a href="usuarios.php">
+              <i class="bi bi-person"></i>
+              <span>Usuarios</span>
             </a>
           </li>
-           <li>
-            <a href="clientes.php">
-              <i class="bi bi-people"></i>
-              <span>Clientes con Membresía</span>
-            </a>
-          </li>
-         
-          
-          
+
+
+
           <li class="header-menu">
             <span>Reportes</span>
-            <i class="bi bi-bar-chart-line"></i> 
+            <i class="bi bi-bar-chart-line"></i>
 
           </li>
           <li>
@@ -155,15 +157,15 @@ if (!isset($_SESSION['SISTEMA']['usuario'])) {
               <span>Reporte de Corte de Caja</span>
             </a>
           </li>
-           
+
         </ul>
       </div>
       <!-- sidebar-menu  -->
     </div>
     <!-- sidebar-content  -->
     <div class="sidebar-footer">
-     
-      
+
+
       <a href="cerrarsesion.php">
         <i class="bi bi-box-arrow-right"></i>
         <span>Cerrar Sesion</span>
@@ -174,33 +176,33 @@ if (!isset($_SESSION['SISTEMA']['usuario'])) {
 
   <!-- page-content" -->
 
-<!-- page-wrapper -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-<script src="menu.js"></script>
-<script>
-  $(document).ready(function() {
-   $(document).on("click","#abrir_puerta",function(){
-		alertify.confirm("Abrir Reilete",'Estas Seguro de Abrir la Puerta', function(){
-		alertify.success('Si') ;
-			$.ajax({
-				type: "POST",
-				url: "abrir_reliete.php",
-				data: ({
-					funcion : "opendoor",
-					employeeNo : "1"
-				}),
-				dataType: "html",
-				async:false,
-				success: function(msg){
-					console.log(msg);
-					alertify.success("Puerta abierta Exitosamente ");
-					//window.location="clientes.php";
-				}
-			});
-		}, function(){
-			alertify.error('Cancelado')});
-	});
-  });
+  <!-- page-wrapper -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <script src="menu.js"></script>
+  <script>
+    $(document).ready(function () {
+      $(document).on("click", "#abrir_puerta", function () {
+        alertify.confirm("Abrir Reilete", 'Estas Seguro de Abrir la Puerta', function () {
+          $.ajax({
+            type: "POST",
+            url: "abrir_reliete.php",
+            data: ({
+              funcion: "opendoor",
+              employeeNo: "1"
+            }),
+            dataType: "html",
+            async: false,
+            success: function (msg) {
+              console.log(msg);
+              alertify.success("Puerta abierta Exitosamente ");
+              //window.location="clientes.php";
+            }
+          });
+        }, function () {
+          alertify.error('Cancelado')
+        });
+      });
+    });
   </script>

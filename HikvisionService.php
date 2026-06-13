@@ -123,6 +123,7 @@ class HikvisionService
     // Creacion de un nuevo usuario (SIN FOTO)
     public function createUser(string $employeeNo, string $name, string $beginTime, string $endTime): array
     {
+        $beginTime2 = date("Y-m-d\T00:00:00");
         return $this->request(
             'POST',
             '/ISAPI/AccessControl/UserInfo/Record?format=json',
@@ -132,14 +133,19 @@ class HikvisionService
                     'name' => $name,
                     'userType' => 'normal',
                     'doorRight' => '1',
+                    'RightPlan' => [
+                        [
+                            'doorNo' => 1,
+                            'planTemplateNo' => '1' // Asegúrate de enviar el entero 1
+                        ]
+                    ],
                     'Valid' => [
                         'enable' => true,
-                        'beginTime' => $beginTime,
-                        'endTime' => $endTime,
-                        'timeType' => 'local'
-                    ]
-                ]
-            ]
+                        'beginTime' => $beginTime2,
+                        'endTime' => $endTime
+                    ],
+                ],
+            ],
         );
     }
 
@@ -207,18 +213,17 @@ class HikvisionService
     //actualizo fecha de expiracion del usuario
     public function updateUserExpiration(string $employeeNo, string $beginTime, string $endTime): array
     {
+        $beginTime2 = date("Y-m-d\T00:00:00");
         return $this->request(
             'PUT', // Mantenemos PUT
             '/ISAPI/AccessControl/UserInfo/Modify?format=json', // <--- Cambiado de Record a Modify
             [
                 'UserInfo' => [
                     'employeeNo' => $employeeNo,
-                    // En el endpoint /Modify no siempre es necesario el campo 'mode'
                     'Valid' => [
                         'enable' => true,
-                        'beginTime' => $beginTime,
-                        'endTime' => $endTime,
-                        'timeType' => 'local'
+                        'beginTime' => $beginTime2,
+                        'endTime' => $endTime
                     ]
                 ]
             ]
@@ -381,6 +386,7 @@ class HikvisionService
     // Actualización de datos generales del usuario (Nombre y Vigencia)
     public function updateUser(string $employeeNo, string $name, string $beginTime, string $endTime): array
     {
+        $beginTime2 = date("Y-m-d\T00:00:00");
         return $this->request(
             'PUT',
             '/ISAPI/AccessControl/UserInfo/Modify?format=json',
@@ -389,12 +395,12 @@ class HikvisionService
                     'employeeNo' => $employeeNo,
                     'name' => $name,
                     'userType' => 'normal',
+                    'doorRight' => '1',
                     'Valid' => [
                         'enable' => true,
-                        'beginTime' => $beginTime,
+                        'beginTime' => $beginTime2,
                         'endTime' => $endTime,
-                        'timeType' => 'local'
-                    ]
+                    ],
                 ]
             ]
         );
@@ -408,7 +414,5 @@ class HikvisionService
             $endpoint
         );
     }
-
-
 }
 

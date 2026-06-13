@@ -1,20 +1,28 @@
 <?
 if ($_POST['funcion'] == 'Carga_Usuarios') {
 	include('inc/conectar.php');
-	$Auto = $consulta->query("SELECT usuarios.*, sucursales.nombre AS sucursal  FROM usuarios LEFT JOIN sucursales ON sucursales.idsucursales=usuarios.idsucursal WHERE usuarios.activo = 1 ORDER BY nombre");
+	$Auto = $consulta->query("SELECT *  FROM usuarios ORDER BY nombre");
 	foreach ($Auto as $row) {
 ?>
 		<tr>
 			<td class="text-uppercase"><?= $row['nombre'] ?></td>
 			<td class="text-uppercase"><?= $row['usuario'] ?></td>
-			<td class="text-uppercase"><?= $row['sueldo'] ?></td>
-			<td class="text-uppercase"><?= $row['fecha_ingreso'] ?></td>
-			<td class="text-uppercase"><?= $row['sucursal'] ?></td>
-			<td class="text-uppercase"><?= $row['tipo'] ?></td>
+			<td class="text-uppercase"><?= $row['tipo']?></td>
 			<td class="text-center" width="250">
-				<button type="button" class="btn btn-primary btn-sm editar" registros="<?= $row[0] ?>">Editar</button>
-				<a href="permisos.php?id=<?= $row[0] ?>" style="color:#FFF; text-decoration:none;" class="btn btn-warning btn-sm">Permisos</a>
+				<button type="button" class="btn btn-primary btn-sm editar" registros="<?= $row[0] ?>" data-toggle="modal" data-target="#exampleModal">Editar</button>
+				<?
+				if ($row['idusuarios'] != 1) {
+					if($row['inactivo'] == ""){
+				?>
 				<button type="button" class="btn btn-danger btn-sm eliminar" registros="<?= $row[0] ?>">Eliminar</button>
+				<?
+					}else{
+				?>
+				<button type="button" class="btn btn-success btn-sm restaurar" registros="<?= $row[0] ?>">Restaurar</button>
+				<?	
+					}
+				}
+				?>
 			</td>
 		</tr>
 	<?
@@ -24,19 +32,26 @@ if ($_POST['funcion'] == 'Carga_Usuarios') {
 
 if ($_POST['funcion'] == 'Eliminar') {
 	include('inc/conectar.php');
-	$Auto = $consulta->query("UPDATE usuarios SET activo=0 WHERE idusuarios=" . $_POST['idregistro'] . " ");
+	$Auto = $consulta->query("UPDATE usuarios SET inactivo='".date("Y-m-d H:i:s")."' WHERE idusuarios=" . $_POST['idregistro'] . " ");
+	foreach ($Auto as $Autocontador);
+	exit();
+}
+if ($_POST['funcion'] == 'Restaurar') {
+	include('inc/conectar.php');
+	$Auto = $consulta->query("UPDATE usuarios SET inactivo=null WHERE idusuarios=" . $_POST['idregistro'] . " ");
 	foreach ($Auto as $Autocontador);
 	exit();
 }
 if ($_POST['funcion'] == 'Guardar') {
 	include('inc/conectar.php');
-	$Auto = $consulta->query("INSERT INTO usuarios SET nombre='" . $_POST['nombre'] . "', tipo='" . $_POST['tipo'] . "', fecha_ingreso='" . $_POST['fecha_ingreso'] . "', idsucursal='" . $_POST['idsucursal'] . "', sueldo='" . $_POST['sueldo'] . "', usuario='" . $_POST['usuario'] . "', pass='" . $_POST['pass'] . "', fecha_creacion='" . date("Y-m-d H:i:s") . "' ");
+	
+	$Auto = $consulta->query("INSERT INTO usuarios SET nombre='" . $_POST['nombre'] . "', tipo='" . $_POST['tipo'] . "', pass='" . $_POST['pass'] . "', fecha_creacion='" . date("Y-m-d H:i:s") . "' ");
 	foreach ($Auto as $Autocontador);
 	exit();
 }
 if ($_POST['funcion'] == 'Editar') {
 	include('inc/conectar.php');
-	$Auto = $consulta->query("UPDATE usuarios SET nombre='" . $_POST['nombre'] . "', tipo='" . $_POST['tipo'] . "', fecha_ingreso='" . $_POST['fecha_ingreso'] . "', idsucursal='" . $_POST['idsucursal'] . "', usuario='" . $_POST['usuario'] . "', sueldo='" . $_POST['sueldo'] . "', pass='" . $_POST['pass'] . "' WHERE idusuarios=" . $_POST['idregistro']);
+	$Auto = $consulta->query("UPDATE usuarios SET nombre='" . $_POST['nombre'] . "', tipo='" . $_POST['tipo'] . "', pass='" . $_POST['pass'] . "' WHERE idusuarios=" . $_POST['idregistro']);
 	foreach ($Auto as $Autocontador);
 	exit();
 }
@@ -53,43 +68,19 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 				<label>Nombre</label>
 				<input type="text" class="form-control text-uppercase" id="nombre" value="<?= $row['nombre'] ?>" placeholder="Nombre ">
 			</div>
-			<div class="col-6 font-weight-bold">
-				<label>Usuario</label>
-				<input type="text" class="form-control text-uppercase" value="<?= $row['usuario'] ?>" id="usuario" placeholder="Usuario">
-			</div>
 			<div class="col-3 font-weight-bold">
 				<label>Password</label>
 				<input type="password" class="form-control" value="<?= $row['pass'] ?>" id="pass">
 			</div>
-			<div class="col-3 font-weight-bold">
-				<label>Fecha Ingreso</label>
-				<input type="date" class="form-control text-uppercase" value="<?= $row['fecha_ingreso'] ?>" id="fecha_ingreso" placeholder="Ingreso">
-			</div>
-			<div class="col-3 font-weight-bold">
-				<label>Sueldo</label>
-				<input type="text" class="form-control text-uppercase" value="<?= $row['sueldo'] ?>" id="sueldo" placeholder="sueldo">
-			</div>
+			
 			<div class="col-3 font-weight-bold">
 				<label>Tipo</label>
 				<select class="form-control text-uppercase" id="tipo">
-					<option value="admin">Administrador</option>
-					<option value="user">Usuario</option>
+					<option value="Administrador">Administrador</option>
+					<option value="Usuario">Usuario</option>
 				</select>
 			</div>
-			<div class="col-3 font-weight-bold">
-				<label>Sucursal</label>
-				<select class="form-control text-uppercase" id="idsucursal">
-					<option value="-1">Seleccione</option>
-					<?
-					$Auto = $consulta->query("SELECT * FROM sucursales WHERE activo=1");
-					foreach ($Auto as $row) {
-					?>
-						<option value="<?= $row[0] ?>"><?= $row['nombre'] ?></option>
-					<?
-					}
-					?>
-				</select>
-			</div>
+			
 		</div>
 	</div>
 	<div class="modal-footer modal-lg">
@@ -131,23 +122,24 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalLabel">Usuarios</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
+					
 				</div>
 				<div id="resultados_modal">
 				</div>
 			</div>
 		</div>
 	</div>
-	<div class="container-fluid">
+
+<?
+include("menu.php");
+?>
+  <main class="page-content">
+    <div class="container-fluid" style="text-align: center;">
 		<div class="row">
-			<div class="col-md-2 text-left">
-				<?
-				include("menu1.php");
-				?>
+			<div class="col-2">
+				&nbsp;
 			</div>
-			<div class="col-md-10">
+      		<div class="col-md-10">
 				<div class="row">
 					<div class="col">
 						&nbsp;
@@ -156,9 +148,8 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 						<h3>Usuarios</h3>
 					</div>
 					<div class="col">
-						<button type="button" id="Nuevo" class="btn btn-info btn-sm">Agregar Usuarios</button>
-						<button type="button" id="carga_modal" class="invisible btn btn-info  btn-sm" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo"></button>
-						<button type="button" id="carga_modal_alumnos" class="invisible btn btn-info  btn-sm" data-toggle="modal" data-target="#modalalumnos" data-whatever="@mdo"></button>
+						<button type="button" id="Nuevo" class="btn btn-info btn-sm" data-toggle="modal" data-target="#exampleModal">Agregar Usuarios</button>
+						
 					</div>
 				</div>
 				<div class="row">
@@ -168,9 +159,6 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 								<tr>
 									<th>Nombre</th>
 									<th>Usuario</th>
-									<th>Sueldo</th>
-									<th>Fecha Ingreso</th>
-									<th>Sucursal</th>
 									<th>Tipo</th>
 									<th>Opciones</th>
 								</tr>
@@ -181,8 +169,12 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 					</div>
 				</div>
 			</div>
-		</div>
-	</div>
+      
+    </div>
+
+  </main>
+
+</div>
 </body>
 <!-- .//container -->
 <script>
@@ -220,44 +212,28 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 				$("#nombre").focus();
 				return false;
 			}
-			if ($("#usuario").val() == "") {
-				alertify.error("Ingresa un Usuario");
-				$("#usuario").focus();
-				return false;
-			}
+			
 			if ($("#pass").val() == "") {
 				alertify.error("Ingresa una pass");
 				$("#pass").focus();
 				return false;
 			}
-			if ($("#fecha_ingreso").val() == "") {
-				alertify.error("Ingresa un Fecha de Ingreso");
-				$("#fecha_ingreso").focus();
-				return false;
-			}
-			if ($("#idsucursal option:selected").val() == "-1") {
-				alertify.error("Selecciona una Sucursal");
-				$("#idsucursal").focus();
-				return false;
-			}
+			
 			$.ajax({
 				type: "POST",
 				url: "<?= $_SERVER["PHP_SELF"] ?>",
 				data: ({
 					funcion: "Guardar",
 					nombre: $("#nombre").val(),
-					usuario: $("#usuario").val(),
 					pass: $("#pass").val(),
-					sueldo: $("#sueldo").val(),
-					fecha_ingreso: $("#fecha_ingreso").val(),
-					idsucursal: $("#idsucursal option:selected").val(),
 					tipo: $("#tipo option:selected").val()
 				}),
 				dataType: "html",
 				async: false,
 				success: function(msg) {
+					console.log(msg);
 					alertify.success("Usuario Agredado Exitosamente ");
-					window.location = "<?= $_SERVER["PHP_SELF"] ?>";
+					//window.location = "<?= $_SERVER["PHP_SELF"] ?>";
 				}
 			});
 		});
@@ -268,37 +244,19 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 				$("#nombre").focus();
 				return false;
 			}
-			if ($("#usuario").val() == "") {
-				alertify.error("Ingresa un Usuario");
-				$("#usuario").focus();
-				return false;
-			}
 			if ($("#pass").val() == "") {
 				alertify.error("Ingresa una pass");
 				$("#pass").focus();
 				return false;
 			}
-			if ($("#fecha_ingreso").val() == "") {
-				alertify.error("Ingresa un Fecha de Ingreso");
-				$("#fecha_ingreso").focus();
-				return false;
-			}
-			if ($("#idsucursal option:selected").val() == "-1") {
-				alertify.error("Selecciona una Sucursal");
-				$("#idsucursal").focus();
-				return false;
-			}
+			
 			$.ajax({
 				type: "POST",
 				url: "<?= $_SERVER["PHP_SELF"] ?>",
 				data: ({
 					funcion: "Editar",
 					nombre: $("#nombre").val(),
-					usuario: $("#usuario").val(),
 					pass: $("#pass").val(),
-					sueldo: $("#sueldo").val(),
-					fecha_ingreso: $("#fecha_ingreso").val(),
-					idsucursal: $("#idsucursal option:selected").val(),
 					idregistro: idregistro,
 					tipo: $("#tipo option:selected").val()
 				}),
@@ -328,30 +286,7 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 				}
 			});
 		}
-		$('#example').DataTable({
-			language: {
-				processing: "Procesando...",
-				search: "Buscar:",
-				lengthMenu: "Mostrar _MENU_ ",
-				info: "Mostrando _START_ de _END_ de Total de  _TOTAL_ resultados",
-				infoEmpty: "Sin Registros 0 de 0 de 0 Mostrando",
-				infoFiltered: "(Filtrando de _MAX_ Filtrados)",
-				infoPostFix: "",
-				loadingRecords: "Chargement en cours...",
-				zeroRecords: "Sin Resultados",
-				emptyTable: "Sin Resultados en la Tabla",
-				paginate: {
-					first: "Primero",
-					previous: "Anterior",
-					next: "Siguiente",
-					last: "Ultimo"
-				},
-				aria: {
-					sortAscending: ": Ordenar Ascendente",
-					sortDescending: ": Ordenar Desendente"
-				}
-			}
-		});
+		
 
 		$(document).on("click", ".eliminar", function() {
 			var idregistro = $(this).attr("registros");
@@ -367,6 +302,29 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 					async: false,
 					success: function(msg) {
 						alertify.success("Usuario eliminado Exitosamente " + msg);
+						window.location = "<?= $_SERVER["PHP_SELF"] ?>";
+
+					}
+				});
+			}, function() {
+				alertify.error('Cancelado')
+			});
+		});
+		$(document).on("click", ".restaurar", function() {
+			var idregistro = $(this).attr("registros");
+			alertify.confirm("Restauracion", '¿Estas Seguro de Restaurar el Usuario?', function() {
+				$.ajax({
+					type: "POST",
+					url: "<?= $_SERVER["PHP_SELF"] ?>",
+					data: ({
+						funcion: "Restaurar",
+						idregistro: idregistro
+					}),
+					dataType: "html",
+					async: false,
+					success: function(msg) {
+						//console.log(msg);
+						alertify.success("Usuario restaurado Exitosamente " + msg);
 						window.location = "<?= $_SERVER["PHP_SELF"] ?>";
 
 					}
