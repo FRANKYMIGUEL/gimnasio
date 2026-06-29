@@ -63,7 +63,11 @@ if($stmt->errorCode() == 0) {
 			
 			$query1 = $consulta->query($sql_detalle);
 			foreach ($query1 as $row2);
-			
+				$idventas_detalle = $row2[0];
+				//SI SE INSERTO EL DETALLE DE VENTA
+					//ACTUALIZO EXISTENCIAS
+					$sql_exis = "UPDATE productos SET existencias = existencias - ".$val[2]." WHERE idproductos=".$val[0];
+					$query2 = $consulta->query($sql_exis);
 		}
 		 echo $idventas;
 
@@ -409,6 +413,7 @@ exit();
 					async: false,
 					success: function(msg) {
 						idventas = msg;
+						console.log(msg);
 						if (msg > 0) {
 							bandera = false;
 							alertify.success("Venta Guardada Correctamente");

@@ -112,7 +112,6 @@ $(document).ready(function(e) {
 		dataType: "html",
 		async:false,
 		success: function(msg){
-			console.log(msg);
 		  if (msg=="admin") {
 			alertify.success('Bienvenido admin');
 			window.location="index.php";

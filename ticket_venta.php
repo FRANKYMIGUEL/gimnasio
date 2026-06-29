@@ -30,6 +30,7 @@ $piezas = 0;
 	<div style="position:RELATIVE;left:0px;width:<?=$ancho?>px;text-align:center; font-size:14px;">
       <label>Santa Rita #353 Arandas, Jal. </label><br />
       <label>3481328125</label><br />
+      <label>Instagram : vital_gym._<br />Facebook: Vital Gym</label><br />
     	<label><b>Ticket No. : <?=str_pad($row["folio"], 6, "0", STR_PAD_LEFT); ?></b></LABEL>
 	</div>
 	<div style="position:RELATIVE;left:5px;font-size:12px;width:<?=$ancho?>px;text-align:left;">

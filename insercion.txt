@@ -1,0 +1,15 @@
+INSERT INTO clientes (
+    codigo, nombre, domicilio, telefono, observaciones, fechabaja, 
+    idmembresia, membresia, fechapago, importepago, diapago, 
+    genero, fecharegistro, fechaexpiracion, imagen, dispositivo
+)
+SELECT 
+    c3.codigo, c3.nombre, c3.domicilio, c3.telefono, c3.observaciones, c3.fechabaja, 
+    c3.idmembresia, c3.membresia, c3.fechapago, c3.importepago, c3.diapago, 
+    c3.genero, c3.fecharegistro, c3.fechaexpiracion, c3.imagen, c3.dispositivo
+FROM clientes3 c3
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM clientes c 
+    WHERE c.codigo = c3.codigo
+);

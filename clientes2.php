@@ -1,9 +1,16 @@
 <?
 
 include('HikvisionService.php');
-$ip = '192.168.1.79';
+$ip = '192.0.0.64';
 $username = 'admin';
 $password = 'simbiosis2026';
+
+
+//validar si las variables por post  undifined
+if (!isset($_POST['funcion'])) {
+	echo "No se ha especificado una función a ejecutar.";
+	exit();
+}
 
 // Carga de clientes registrados
 if ($_POST['funcion'] == 'Carga_Clientes') {
@@ -16,40 +23,33 @@ if ($_POST['funcion'] == 'Carga_Clientes') {
 		$row['fecharegistro'] = date("d-m-Y", strtotime($row['fecharegistro']));
 		?>
 		<tr>
-			<td class="align-middle text-center">
+			<td>
 				<button type="button" class="btn btn-default btn-sm btn-primary">
 					<?= $row['codigo'] ?>
 				</button>
 			</td>
-			<td class="align-middle text-center"><?= $row['nombre'] ?></td>
-			<td class="align-middle text-center"><?= $row['domicilio'] ?></td>
-			<td class="align-middle text-center"><?= $row['genero'] ?></td>
-			<td class="align-middle text-center"><?= $row['telefono'] ?></td>
-			<td class="align-middle text-center"><?= substr($row['fechapago'], 0, 10) ?></td>
-			<td class="align-middle text-center"><?= substr($row['fechaexpiracion'], 0, 10) ?></td>
-			<td class="align-middle text-center">
-				<?
-				$rutaImagen = $row['imagen'] ? $row['imagen'] : './img/placeholderFotoPerfil.jpg';
-				$rutaImagen = file_exists($rutaImagen) ? $rutaImagen : './img/placeholderFotoPerfil.jpg';
-				?>
-				<img src="<?= $rutaImagen ?>" class="img-thumbnail" width="100">
+			<td><?= $row['nombre'] ?></td>
+			<td><?= $row['domicilio'] ?></td>
+			<td><?= $row['genero'] ?></td>
+			<td><?= $row['telefono'] ?></td>
+			<td><?= substr($row['fechapago'], 0, 10) ?></td>
+			<td><?= substr($row['fechaexpiracion'], 0, 10) ?></td>
+			<td>
+				<button type="button" class="btn btn-default btn-sm btn-secondary foto" data-toggle="modal"
+					data-target="#modalFoto" idregistro="<?= $row[0] ?>">
+					<i class="bi bi-camera"></i> Actualizar Foto
+				</button>
 			</td>
-			<td class="align-middle text-center"><?= substr($row['fecharegistro'], 0, 10) ?></td>
-			<td class="align-middle text-center">
-				<div class="btn-group " role="group">
-					<button type="button" class="btn btn-default btn-sm btn-info text-sm editar" data-toggle="modal"
-						data-target="#myModal" idregistro="<?= $row[0] ?>">
-						<i class="bi bi-pencil"></i> Editar
-					</button>
-					<button type="button" class="btn btn-default btn-sm btn-danger text-sm eliminar"
-						idregistro="<?= $row[0] ?>">
-						<i class="bi bi-trash3"></i> Eliminar
-					</button>
-					<button type="button" class="btn btn-default btn-sm btn-secondary text-sm foto" data-toggle="modal"
-						data-target="#modalFoto" idregistro="<?= $row[0] ?>">
-						<i class="bi bi-camera"></i> Actualizar Foto
-					</button>
-				</div>
+			<td><?= substr($row['fecharegistro'], 0, 10) ?></td>
+			<td>
+				<button type="button" class="btn btn-default btn-sm btn-info editar" data-toggle="modal" data-target="#myModal"
+					idregistro="<?= $row[0] ?>">
+					<i class="bi bi-pencil"></i> Editar
+				</button>
+				<button type="button" class="btn btn-default btn-sm btn-danger eliminar" idregistro="<?= $row[0] ?>">
+					<i class="bi bi-trash3"></i> Eliminar
+				</button>
+				
 			</td>
 		</tr>
 		<?
@@ -75,75 +75,27 @@ if ($_POST['funcion'] == 'Carga_Folio') {
 // Edicion de clientes
 if ($_POST['funcion'] == 'Editar_Productos') {
 	include("inc/conectar.php");
-	// Actualizacion en la BD
-	$consulta->query("UPDATE clientes SET codigo='" . $_POST['codigo'] . "', nombre='" . $_POST['nombre'] . "', domicilio='" . $_POST['domicilio'] . "', idmembresia='" . $_POST['idmembresia'] . "', membresia='" . $_POST['membresia'] . "', telefono='" . $_POST['telefono'] . "', observaciones='" . $_POST['observaciones'] . "', genero='" . $_POST['genero'] . "' WHERE idclientes=" . $_POST['idregistro']);
-
-	$resultadoBD = $consulta->query("SELECT dispositivo, fechaexpiracion FROM clientes WHERE idclientes = " . $_POST['idregistro']);
-	foreach ($resultadoBD as $cliente)
+	$Auto = $consulta->query("UPDATE clientes SET codigo='" . $_POST['codigo'] . "', nombre='" . $_POST['nombre'] . "', domicilio='" . $_POST['domicilio'] . "', idmembresia='" . $_POST['idmembresia'] . "', membresia='" . $_POST['membresia'] . "', telefono='" . $_POST['telefono'] . "', observaciones='" . $_POST['observaciones'] . "', genero='" . $_POST['genero'] . "' WHERE idclientes=" . $_POST['idregistro']);
+	foreach ($Auto as $Autocontador)
 		;
-	if ($cliente && $cliente['dispositivo'] == 1) {
-		try {
-			$controlador = new HikvisionService($ip, $username, $password);
-
-			$fechaInicio = date("Y-m-d\T00:00:00");
-			if (!empty($cliente['fechaexpiracion']) && $cliente['fechaexpiracion'] != '1969-12-31') {
-				$fechaFin = date("Y-m-d\T23:59:59", strtotime($cliente['fechaexpiracion']));
-			} else {
-				$fechaFin = date("Y-m-d\T23:59:59", strtotime("+1 month"));
-			}
-
-			$controlador->updateUser($_POST['idregistro'], $_POST['nombre'], $fechaInicio, $fechaFin);
-
-		} catch (Exception $e) {
-			echo json_encode([
-				'success' => false,
-				'mensaje' => 'Error al sincronizar los cambios con el lector.'
-			]);
-		}
-	}
-
-	echo json_encode([
-		'success' => true,
-		'mensaje' => 'Cliente modificado exitosamente.'
-	]);
-
 	exit();
 }
 
 // Eliminación de clientes
+//TODO: agregar la eliminación del usuario en el controlador de Hikvision, actualmente solo se marca como baja en la base de datos
 if ($_POST['funcion'] == 'Eliminar') {
 	include("inc/conectar.php");
-
+	$Auto = $consulta->query("UPDATE clientes SET fechabaja='" . date("Y-m-d H:i:s") . "' WHERE idclientes=" . $_POST['idregistro']);
+	foreach ($Auto as $Autocontador)
+		;
 	try {
-		// Elimniacion logica en la BD
-		$Auto = $consulta->query("UPDATE clientes SET fechabaja='" . date("Y-m-d H:i:s") . "' WHERE idclientes=" . $_POST['idregistro']);
-		foreach ($Auto as $Autocontador)
-			;
-
-		// Eliminacion en el controlador hikvision
 		$controlador = new HikvisionService($ip, $username, $password);
-		// Eliminación del registro del cliente en el controlador
 		$controlador->deleteUser($_POST['idregistro']);
-		// Eliminacion de la foto
-		unlink("capturas/rostro" . $_POST['idregistro'] . ".jpg");
 	} catch (Exception $e) {
 		echo "Error en la comunicación: " . $e->getMessage();
 	}
-
 	exit();
 }
-
-// Limpieza de imagenes si se cancela la operacion
-if ($_POST['funcion'] == 'limpiarFotoTemporal') {
-	$idregistro = $_POST['idregistro'];
-	$imagePath = "capturas/rostro{$idregistro}.jpg";
-
-	if (file_exists($imagePath)) {
-		unlink($imagePath);
-	}
-	exit();
-}
-
 
 // Nuevo registro de cliente y asignación al lector de huellas/facial
 if ($_POST['funcion'] == 'Guardar') {
@@ -155,80 +107,46 @@ if ($_POST['funcion'] == 'Guardar') {
 		$password
 	);
 
-	try {
-		// Obtener el siguiente ID de cliente para usarlo como ID de usuario en el hikvision
-		$Auto = $consulta->query("SELECT MAX(idclientes)+1 AS Auto_increment FROM clientes");
-		foreach ($Auto as $Autocontador)
-			;
-		// Obtencion del ID
-		$nextId = $Autocontador["Auto_increment"];
-		// Generación del código de cliente con ceros a la izquierda
-		$CODIGO = str_pad($Autocontador["Auto_increment"], 6, "0", STR_PAD_LEFT);
+	$Auto = $consulta->query("SELECT MAX(idclientes)+1 AS Auto_increment FROM clientes");
+	foreach ($Auto as $Autocontador)
+		;
+
+	$nextId = $Autocontador["Auto_increment"];
+	$CODIGO = str_pad($Autocontador["Auto_increment"], 6, "0", STR_PAD_LEFT);
+
+	$Auto = $consulta->query("INSERT INTO clientes SET codigo='" . $CODIGO . "', nombre='" . $_POST['nombre'] . "', domicilio='" . $_POST['domicilio'] . "', idmembresia='" . $_POST['idmembresia'] . "', membresia='" . $_POST['membresia'] . "', telefono='" . $_POST['telefono'] . "', observaciones='" . $_POST['observaciones'] . "', genero='" . $_POST['genero'] . "' ");
+	foreach ($Auto as $Autocontador)
+		;
 
 
-		$Auto = $consulta->query("INSERT INTO clientes SET codigo='" . $CODIGO . "', nombre='" . $_POST['nombre'] . "', domicilio='" . $_POST['domicilio'] . "', idmembresia='" . $_POST['idmembresia'] . "', membresia='" . $_POST['membresia'] . "', telefono='" . $_POST['telefono'] . "', observaciones='" . $_POST['observaciones'] . "', genero='" . $_POST['genero'] . "' ");
-		foreach ($Auto as $Autocontador)
-			;
-
-
-		$fechaInicio = date("Y-m-d\T00:00:00");
-		$fechaFin = date("Y-m-d\T23:59:59", strtotime("+1 day"));
-		$response = $controlador->createUser($nextId, $_POST['nombre'], $fechaInicio, $fechaFin);
-
-		if ($response['status'] == 200) {
-			$consulta->query("UPDATE clientes SET dispositivo = 1 WHERE idclientes = " . $nextId);
-		}
-
-	} catch (Exception $e) {
-		echo "Error en la comunicación: " . $e->getMessage();
-	}
-
-
+	$fechaInicio = date("Y-m-d\TH:i:s");
+	$fechaFin = date("Y-m-d\TH:i:s", strtotime("+1 day"));
+	$response = $controlador->createUser($nextId, $_POST['nombre'], $fechaInicio, $fechaFin);
 	echo json_encode($response);
 	exit();
 }
 
+
 // ----------------- FIN FUNCIONES DE CRUD ------------------------------
 
-
-// ultima modificacion - sincronizar cliente con el lector y cambiar el estado a 1 en BD
 if ($_POST['funcion'] == 'Registrar_Pago') {
 	include("inc/conectar.php");
-	$idregistro = $_POST['idregistro'];
 	$duracion = $_POST['duracion'];
-	$fechaexpiracion = date("Y-m-d\T23:59:59", strtotime("+ $duracion day"));
+	$fechaexpiracion = date("Y-m-d H:i:s", strtotime("+ $duracion day"));
 	$Auto = $consulta->query("UPDATE clientes SET fechapago='" . date("Y-m-d H:i:s") . "', importepago='" . $_POST['importepago'] . "', fechaexpiracion='" . $fechaexpiracion . "' WHERE idclientes=" . $_POST['idregistro']);
 	foreach ($Auto as $Autocontador)
 		;
 	try {
 		$controlador = new HikvisionService($ip, $username, $password);
 
-		$fechaInicio = date("Y-m-d\T00:00:00");
-		$fechaFin = date("Y-m-d\T23:59:59", strtotime("+$duracion day"));
+		$fechaInicio = date("Y-m-d\TH:i:s");
+		$fechaFin = date("Y-m-d\TH:i:s", strtotime("+$duracion day"));
 
-		// obtencion del status del cliente
-		$query = $consulta->query("SELECT nombre, dispositivo, imagen FROM clientes WHERE idclientes = " . $idregistro);
-		foreach ($query as $client)
-			;
-
-		if ($client['dispositivo'] == 1) {
-			$respuesta = $controlador->updateUserExpiration(
-				$_POST['idregistro'],
-				$fechaInicio,
-				$fechaFin
-			);
-
-		} else {
-			$respuesta = $controlador->createUser($idregistro, $client['nombre'], $fechaInicio, $fechaFin);
-
-			if ($respuesta['status'] == 200) {
-				if (!empty($client['imagen']) && file_exists($cliente['imagen'])) {
-					$controlador->updateFace($idregistro);
-				}
-				$consulta->query("UPDATE clientes SET dispositivo = 1 WHERE idclientes = " . $idregistro);
-			}
-		}
-
+		$respuesta = $controlador->updateUserExpiration(
+			$_POST['idregistro'],
+			$fechaInicio,
+			$fechaFin
+		);
 
 		//insertanmos el pago en la tabla de movimientoscaja
 		$Auto = $consulta->query("INSERT INTO movimientoscaja SET idclientes=" . $_POST['idregistro'] . ", importe='" . $_POST['importepago'] . "', fecha='" . date("Y-m-d H:i:s") . "', tipo='Membresia', observaciones='Pago de Membresia', idusuarios=" . $_SESSION['SISTEMA']['idusuarios'] . ", usuarios='" . $_SESSION['SISTEMA']['usuario'] . "'");
@@ -256,28 +174,17 @@ if ($_POST['funcion'] == 'Cargar_Costos') {
 // Toma de fotografía
 if ($_POST['funcion'] == 'tomarFotografia') {
 	$idregistro = $_POST['idregistro'];
-
-	try {
-		$hikvision = new HikvisionService(
-			$ip,
-			$username,
-			$password
-		);
-
-		$ok = $hikvision->takeLivePicture($idregistro);
-
-		echo json_encode([
-			'success' => $ok,
-			'imagen' => "rostro" . $idregistro . ".jpg"
-		]);
-	} catch (Exception $e) {
-		echo "Error en la comunicacion: " . $e->getMessage();
-	}
-
+	$hikvision = new HikvisionService($ip,$username,$password);
+	$ok = $hikvision->takeLivePicture($idregistro,$username,$password);
+	echo json_encode([
+		'success' => $ok,
+		'imagen' => "rostro{$idregistro}.jpg"
+	]);
 	exit();
 }
 
 // Asignación de fotografía
+// TODO: Si  response['status'] es diferente a 200, eliminar la foto tomada del dispositivo y mostrar un mensaje de error al usuario
 if ($_POST['funcion'] == 'asignarFoto') {
 	include('inc/conectar.php');
 	$idregistro = $_POST['idregistro'];
@@ -292,18 +199,66 @@ if ($_POST['funcion'] == 'asignarFoto') {
 	// Agrega la foto al hikvision y dependiendo el status de la respuesta continua con la bd
 	$response = $hikvision->updateFace($idregistro);
 
-	$consulta->query("UPDATE clientes SET imagen = '" . $imagePath . "' WHERE idclientes = " . $idregistro);
+	// insercion a la bd
+	if ($response['status'] == 200) {
+		$consulta->query("UPDATE clientes SET imagen = '" . $imagePath . "' WHERE idclientes = " . $idregistro);
+	}else{
+		// Si el estatus no es 200, eliminamos la foto tomada para evitar confusiones
+		if (file_exists($imagePath)) {
+			unlink($imagePath);
+		}
+	}
 
-	echo json_encode([
-		'success' => true,
-		'message' => 'Fotografia añadida correctamente.'
-	]);
+	echo json_encode($response);
+	exit();
+}
+if($_POST['funcion']=='Registrar_Dispositivo'){
+include("inc/conectar.php");
+	try {
+		$controlador = new HikvisionService($ip, $username, $password);
+
+		// 1. Ejecutar la creación
+		$respuesta = $controlador->createUser(
+			$_POST['idregistro'], 
+			$_POST['nombre'], 
+			date("Y-m-d\TH:i:s"), 
+			date("Y-m-d\TH:i:s", strtotime("+1 day"))
+		);
+
+		// 2. VALIDACIÓN CRÍTICA: ¿Hikvision realmente guardó el registro?
+		if (!isset($respuesta['statusString']) || $respuesta['statusString'] !== 'OK') {
+			
+			// Extraemos la causa específica del error si existe
+			$subError = $respuesta['subStatusCode'] ?? 'unknownError';
+			$errorMsg = $respuesta['errorMsg'] ?? 'No se proporcionaron detalles.';
+			// Lanzamos una excepción con el motivo exacto del biométrico
+			throw new Exception("El lector rechazó el registro. Motivo: [{$subError}] - {$errorMsg}");
+		}
+
+		// 3. Si pasa el IF anterior, el usuario se guardó con éxito
+		echo "<h3>¡Usuario {$_POST['nombre']} registrado correctamente en el lector!</h3>";
+
+	} catch (Exception $e) {
+		// Aquí va a caer SÍ O SÍ si falla la red, las contraseñas, o si el ID ya existe
+		echo "<h3 style='color:red;'>Error al registrar usuario:</h3>";
+		echo "<p>" . $e->getMessage() . "</p>";
+		
+		// Opcional: Imprime toda la respuesta para debuggear en desarrollo
+		if (isset($respuesta)) {
+			echo "<pre>Respuesta cruda del equipo:\n";
+			//print_r($respuesta);
+			echo "</pre>";
+		}
+	}
+	$Auto = $consulta->query("UPDATE clientes SET dispositivo=1 WHERE idclientes=".$_POST['idregistro']);
+	foreach ($Auto as $Autocontador);
 	exit();
 }
 
-
 // ------------------ CARGA DE MODAL ------------------------
 // Carga de modal para edicion y nuevo cliente
+// TODO: Eliminar las opciones de cargar cliente en el lector de huellas y registro de rostro, ya que se registran automaticamente al registrar el pago de la membresia, actualmente solo se muestra el estatus de registro en el lector y rostro
+// TODO: Eliminar la opción de cargar foto (se cargará desde la tabla)
 if ($_POST['funcion'] == 'Carga_Modal') {
 	include("inc/conectar.php");
 	$idclientes = 0;
@@ -371,12 +326,12 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 					$row['fechapago'] = date("d-m-Y", strtotime($row['fechapago']));
 					$row['fechaexpiracion'] = date("d-m-Y", strtotime($row['fechaexpiracion']));
 					?>
-					<table class="table table-bordered table-sm  table-striped">
+					<table class="table table-bordered table-sm table-success table-hover table-striped">
 						<thead>
 							<tr>
 								<th>Fecha Ultimo Pago</th>
 								<th>Fecha de Expiracion</th>
-								<th>Estatus en el Escaner</th>
+								<th>Estatus</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -408,7 +363,7 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 												idregistro="<?= $row[0] ?>" pago="0" duracion="0">Renovar Membresia </button>
 											<?
 										} else {
-											echo "<span class='badge badge-success text-black'>Activa hasta el " . $row['fechaexpiracion'] . "</span>";
+											echo "<span class='badge badge-success'>Activa hasta el " . $row['fechaexpiracion'] . "</span>";
 										}
 									} else {
 										echo "Sin Registro de Expiracion";
@@ -416,14 +371,40 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 									?>
 								</td>
 								<td>
-									<?
-									if ($row['dispositivo'] == 1) {
-										echo "<span class='badge badge-primary text-black '>Cliente Sincronizado</span>";
-									} else {
-										echo "<button class = 'btn btn-primary sincronizarCliente' idregistro = " . $row['idclientes'] . ">Sincronizar</button>";
-									}
+								<? if($row['dispositivo']==1){ 
+									//valido que el dispositivo este registrado en el lector de huellas
+									try {
+											$controlador = new HikvisionService('192.0.0.64', 'admin', 'simbiosis2026');
+											
+											$fechaInicio = date("Y-m-d\TH:i:s");
+											$fechaFin    = date("Y-m-d\TH:i:s", strtotime("+$duracion day"));
+
+											$respuesta = $controlador->getUserByID($_POST['idregistro']);
+											// Revisamos si el estatus interno de Hikvision fue exitoso
+											if ($respuesta['status']=="200") {
+												?>
+												<b class="badge badge-success">Registrado</b>
+												<?
+											} else {
+												?>
+												<span class="badge badge-danger">No Registrado en el Lector</span><br>
+												<button type="button" class="btn btn-default btn-sm btn-warning registrar_dispositivo" idregistro="<?=$row[0]?>">Registrar</button>
+												<?
+											}
+										} catch (Exception $e) {
+											?>
+											<span class="badge badge-danger">Error de Comunicación</span>
+											<?
+										}
+									
+									
 									?>
-								</td>
+								<? }else{ ?>
+									<button type="button" class="btn btn-default btn-sm btn-warning registrar_dispositivo" idregistro="<?=$row[0]?>">
+									<i class="bi bi-camera"></i> Registrar Dispositivo
+									</button>
+								<? } ?>
+							</td>
 							</tr>
 						</tbody>
 					</table>
@@ -468,56 +449,6 @@ if ($_POST['funcion'] == 'Carga_Modal') {
 		exit();
 }
 // ---------------------------------- FIN CARGA DE MODAL ---------------------------------------------------------
-
-// Sincronizar usuario con el dispositivo
-if ($_POST['funcion'] == 'sincronizarCliente') {
-	include('inc/conectar.php');
-	$idregistro = $_POST['idregistro'];
-
-	// Extraccion de la informacion del cliente de la DB
-	$clienteDb = $consulta->query("SELECT * FROM clientes WHERE idclientes = " . $idregistro);
-	foreach ($clienteDb as $cliente)
-		;
-
-	try {
-		$controlador = new HikvisionService($ip, $username, $password);
-
-		// Verificacion de fecha de expiracion
-		$fechaInicio = date("Y-m-d\T00:00:00");
-		if (!empty($cliente['fechaexpiracion']) && $cliente['fechaexpiracion'] != '1969-12-31') {
-			// Le agregamos la hora límite al final del día
-			$fechaFin = date("Y-m-d\T23:59:59", strtotime($cliente['fechaexpiracion']));
-		} else {
-			$fechaFin = date("Y-m-d\T23:59:59", strtotime("+1 day"));
-		}
-
-		$responseCreate = $controlador->createUser($idregistro, $cliente['nombre'], $fechaInicio, $fechaFin);
-
-		if ($responseCreate['status'] == 200) {
-			$consulta->query("UPDATE clientes SET dispositivo = 1 WHERE idclientes = " . $idregistro);
-
-			echo json_encode([
-				'success' => true,
-				'mensaje' => 'Cliente sincronizado correctamente.',
-				'hikvision' => $responseCreate,
-			]);
-		} else {
-			echo json_encode([
-				'success' => false,
-				'mensaje' => 'El dispositivo rechazo la sincronizacion',
-				'hikvision' => $responseCreate
-			]);
-		}
-	} catch (Exception $e) {
-		echo json_encode([
-			'success' => false,
-			'mensaje' => 'Error de conexion: ' . $e->getMessage(),
-			'hikvision' => $responseCreate
-		]);
-	}
-
-	exit();
-}
 
 ?>
 
@@ -600,6 +531,7 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalLabel">Clientes</h5>
+
 				</div>
 				<div id="contenido_modal">
 				</div><!-- /.modal-content -->
@@ -613,21 +545,18 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">Toma de fotografía</h5>
+					<h5 class="modal-title">Capturar Foto</h5>
+					
 				</div>
 				<div class="modal-body">
-					<div class="" id="alertaFotoModals"></div>
-					<div class="d-flex justify-content-between">
-						<img src="./img/placeholderFotoPerfil.jpg" alt="Vista previa" class="img-fluid w-75"
-							id="previewFoto">
+					<div>
+						<img src="img/no-image.png" alt="Vista previa" class="img-fluid" style="height: 150px;" id="previewFoto">
 						<button id="tomarFotobtn" class="btn btn-primary">Tomar foto</button>
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-primary" id="guardarFotoModal"><i class="bi bi-floppy">
-						</i>Guardar Foto</button>
-					<button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="bi bi-x-circle"></i>
-						Cancelar</button>
+					<button type="button" class="btn btn-primary" id="guardarFotoModal">Guardar Foto</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
 				</div>
 			</div>
 		</div>
@@ -669,6 +598,33 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 					}
 				}
 			});
+
+			$(document).on("click",".registrar_dispositivo",function(){
+				var idregistro = $(this).attr("idregistro");
+				alertify.confirm("Dispositivo",'Estas Seguro de Registrar el Dispositivo para este Cliente', function(){
+					$.ajax({
+						type: "POST",
+						url: "clientes.php",
+						data: ({
+							funcion : "Registrar_Dispositivo",
+							nombre : $("#nombre").val(),
+							idregistro : idregistro
+						}),
+						dataType: "html",
+						async:false,
+						success: function(msg){
+							console.log(msg);
+							alertify.success("Cliente Agregado al Lector Exitosamente ");
+							//tiempo de espera
+							setTimeout(function(){
+								window.location="clientes.php";
+							}, 2000);
+						}
+					});
+				}, function(){
+					alertify.error('Cancelado')});
+			});	
+
 			$(document).on("click", "#nuevo", function () {
 				Carga_Modal("Nuevo", 0);
 				Carga_Folio();
@@ -707,6 +663,7 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 				var duracion = $(this).attr("duracion");
 
 				alertify.confirm("Pago Membresia", 'Estas Seguro de Registrar el Pago para este Cliente $' + pago + ' por ' + duracion + ' dias', function () {
+					alertify.success('Si');
 					$.ajax({
 						type: "POST",
 						url: "clientes.php",
@@ -719,6 +676,7 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 						dataType: "html",
 						async: false,
 						success: function (msg) {
+							console.log(msg);
 							alertify.success("Pago registrado Exitosamente ");
 							//retardo para que se muestre el mensaje de pago registrado exitosamente antes de recargar la pagina
 							setTimeout(function () {
@@ -779,47 +737,16 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 					dataType: "json",
 					async: false,
 					success: function (response) {
-						alert(JSON.stringify(response));
-						if (response.success) {
-							alertify.success(response.mensaje);
-
-							setTimeout(function () {
-								window.location = "clientes.php";
-							}, 2000);
+						if (response.status == 200) {
+							alertify.success('Foto asignada correctamente.');
+							window.location = "clientes.php";
 						} else {
-							$('#alertaFotoModals').html(
-								'<div class="alert alert-danger alert-dismissible fade show text-sm" role="alert">' +
-								'<strong>¡Atención!</strong> ' + response.mensaje +
-								'<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
-								'<span aria-hidden="true">&times;</span></button></div>'
-							);
-
-							// Limpiamos el src del preview para obligarlo a tomar otra foto
-							$("#previewFoto").attr("src", "./img/placeholderFotoPerfil.jpg");
-
-							alertify.error('Vuelve a tomar la fotografía.');
+							alertify.error('Error al asignar la foto. Toma una nueva foto.');
 						}
 					},
 					error: function (response) {
-						alert(JSON.stringify(response));
 						alertify.error('Error en la comunicación con el dispositivo.');
 					}
-				});
-			});
-
-
-			// Limpieza de foto temporal si se cierra el modal sin guardar la foto
-			$('#modalFoto').on('hidden.bs.modal', function () {
-				let idregistro = $('#guardarFotoModal').attr('idregistro');
-				$("#previewFoto").attr("src", "./img/placeholderFotoPerfil.jpg");
-				$('#alertaFotoModals').html('');
-				$.ajax({
-					type: "POST",
-					url: "clientes.php",
-					data: ({
-						funcion: "limpiarFotoTemporal",
-						idregistro: idregistro
-					}),
 				});
 			});
 
@@ -857,11 +784,12 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 					}),
 					dataType: "json",
 					success: function (response) {
+						console.log(response);
+						return false;
 						if (response.success) {
-							let timestamp = new Date().getTime();
 							$("#previewFoto").attr(
 								"src",
-								"capturas/" + response.imagen + "?t=" + timestamp
+								"capturas/" + response.imagen
 							);
 							alertify.success('Foto tomada correctamente.');
 						} else {
@@ -871,43 +799,7 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 				});
 			});
 
-			// Sincronizar cliente con el dispositivo
-			$(document).on("click", ".sincronizarCliente", function (e) {
-				var idregistro = $(this).attr("idregistro");
 
-				alertify.confirm('Sincronizar Cliente', '¿Deseas sincronizar este cliente con el dispositivo?', function () {
-					$.ajax({
-						type: "POST",
-						url: "clientes.php",
-						data: ({
-							funcion: "sincronizarCliente",
-							idregistro: idregistro
-						}),
-						dataType: "json",
-						async: false,
-						success: function (response) {
-							alert(JSON.stringify(response));
-							if (response.success) {
-								alertify.success('Cliente sincronizado correctamente.');
-								setTimeout(function () {
-									Carga_Modal("Editar", idregistro);
-									Cargar_Costos();
-								}, 1500);
-							} else {
-								alertify.error('Error al sincronizar el cilente.');
-							}
-						},
-						error: function (response) {
-							alert(JSON.stringify(response));
-							alertify.error('Error en la comunicacion con el dispositivo.');
-						}
-					});
-				}, function () {
-					alertify.error('Sincronización cancelada');
-				});
-			});
-
-			// Guardar el cliente
 			$(document).on("click", "#Guardar", function (e) {
 				if ($("#nombre").val() == "") {
 					alertify.error("Ingresa un Nombre");
@@ -934,19 +826,14 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 						telefono: $("#telefono").val(),
 						observaciones: $("#observaciones").val()
 					}),
-					dataType: "json",
+					dataType: "html",
 					async: false,
 					success: function (msg) {
-						alert(JSON.stringify(msg));
 						console.log(msg);
 						alertify.success("Cliente Agredado Exitosamente ");
-						setTimeout(function () {
-							window.location = "clientes.php";
-						}, 2000);
 					}
 				});
 			});
-			// Edicion del cliente
 			$(document).on("click", "#editar_producto", function (e) {
 				var idregistro = $(this).attr("idregistro");
 				if ($("#nombre").val() == "") {
@@ -970,17 +857,12 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 						observaciones: $("#observaciones").val(),
 						idregistro: idregistro
 					}),
-					dataType: "json",
+					dataType: "html",
 					async: false,
-					success: function (response) {
-						if (response.success) {
-							alertify.success(response.mensaje);
-							setTimeout(function () {
-								window.location = "clientes.php";
-							}, 2000);
-						} else {
-							alertify.error('Error al modificar.', response.mensaje);
-						}
+					success: function (msg) {
+						console.log(msg);
+						alertify.success("Cliente Modificado Exitosamente ");
+						window.location = "clientes.php";
 					}
 				});
 			});
@@ -1013,8 +895,6 @@ if ($_POST['funcion'] == 'sincronizarCliente') {
 					}
 				});
 			}
-
-
 		});
 	</script>
 </body>
